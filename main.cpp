@@ -29,6 +29,13 @@
 #include "SpotLight.h"
 #include "Material.h"
 
+
+// Variables y banderas para animacion
+
+// Resorte
+float zResorte;
+
+
 const float toRadians = 3.14159265f / 180.0f;
 
 Window mainWindow;
@@ -40,13 +47,19 @@ Camera camera;
 Texture monedaTexture;
 Texture gabineteTexture;
 Texture canicaTexture;
+Texture resorteTexture;
 
 Model Gabinete_M;
 Model Moneda_M;
 Model Canica_M;
 Model Resorte_M;
+Model Cristal_M;
 
 Skybox skybox;
+
+// Materiales
+Material Material_brillante;
+Material Material_opaco;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -142,13 +155,15 @@ int main()
 
 	monedaTexture = Texture("Textures/moneda.png");
 	monedaTexture.LoadTextureA();
-	gabineteTexture = Texture("Textures/pinball.tga");
+	gabineteTexture = Texture("Textures/prueba.png");
 	gabineteTexture.LoadTextureA();
 	canicaTexture = Texture("Textures/canica.png");
 	canicaTexture.LoadTextureA();
-
+	resorteTexture = Texture("Textures/resorte.png");
+	resorteTexture.LoadTextureA();
+	
 	Gabinete_M = Model();
-	Gabinete_M.LoadModel("Models/pinball.obj");
+	Gabinete_M.LoadModel("Models/gabinete.obj");
 	Moneda_M = Model();
 	Moneda_M.LoadModel("Models/moneda.obj");
 	Canica_M = Model();
@@ -166,6 +181,9 @@ int main()
 
 	skybox = Skybox(skyboxFaces);
 
+	Material_brillante = Material(4.0f, 256);
+	Material_opaco = Material(0.3f, 4);
+
 	//luz direccional
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
 		0.3f, 0.3f,
@@ -181,6 +199,11 @@ int main()
 		uniformSpecularIntensity = 0, uniformShininess = 0;
 	GLuint uniformColor = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
+
+	// Inicializacion de variables para animacion
+
+	//Resorte
+	zResorte = 0.3;
 
 	while (!mainWindow.getShouldClose())
 	{
@@ -221,14 +244,37 @@ int main()
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
-
-		// Gabinete
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0, 0.5f, -28.0f));
-		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+
+		// Animacion del resorte
+		if (mainWindow.getResorte() && zResorte >= 0.1)
+		{
+			zResorte -= 0.0005;
+		}
+		else if (!(mainWindow.getResorte()) && zResorte <= 0.3) {
+			zResorte += 0.1;
+		}
+		else
+		{
+			zResorte = 0.3;
+		}
+
+		// Resorte
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(22.75f, 48.0f, 27.0f));
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, zResorte));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Gabinete_M.RenderModel();
+		Resorte_M.RenderModel();
+
+		
+
+		// Canica
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(10.0f, 11.0f, -12.0f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Canica_M.RenderModel();
 
 		// Moneda
 		model = glm::mat4(1.0f);
@@ -238,20 +284,16 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Moneda_M.RenderModel();
 
-		// Resorte
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(10.0f, 9.5f, -7.5f));
-		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
-		model = glm::rotate(model, -70 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		// Gabinete
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Resorte_M.RenderModel();
-
-		// Canica
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(10.0f, 11.0f, -12.0f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica_M.RenderModel();
+		Gabinete_M.RenderModel();
+		//blending: transparencia o traslucidez
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 
 		glUseProgram(0);
 		mainWindow.swapBuffers();
