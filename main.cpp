@@ -35,6 +35,13 @@
 // Resorte
 float zResorte;
 
+// Flippers
+float angulo_f1;
+bool regresa_f1;
+float angulo_f2;
+bool regresa_f2;
+float angulo_f3;
+bool regresa_f3;
 
 const float toRadians = 3.14159265f / 180.0f;
 
@@ -54,6 +61,7 @@ Model Moneda_M;
 Model Canica_M;
 Model Resorte_M;
 Model Cristal_M;
+Model Flipper_M;
 
 Skybox skybox;
 
@@ -170,6 +178,8 @@ int main()
 	Canica_M.LoadModel("Models/canica.obj");
 	Resorte_M = Model();
 	Resorte_M.LoadModel("Models/resorte.obj");
+	Flipper_M = Model();
+	Flipper_M.LoadModel("Models/flipper.obj");
 
 	std::vector<std::string> skyboxFaces;
 	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_rt.tga");
@@ -202,8 +212,16 @@ int main()
 
 	// Inicializacion de variables para animacion
 
-	//Resorte
+	// Resorte
 	zResorte = 0.3;
+
+	// Flippers
+	angulo_f1 = 60.0;
+	regresa_f1 = false;
+	angulo_f2 = 60.0;
+	regresa_f2 = false;
+	angulo_f3 = 60.0;
+	regresa_f3 = false;
 
 	while (!mainWindow.getShouldClose())
 	{
@@ -267,7 +285,81 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Resorte_M.RenderModel();
 
-		
+		// Regresar Flipper 1 a su posicion inicial
+		if (mainWindow.getFlipper1() >= 60.0)
+		{
+			angulo_f1 = 60.0;
+			regresa_f1 = true;
+		}
+		else if (mainWindow.getFlipper1() <= 0.0)
+		{
+			regresa_f1 = false;
+		}
+
+		if (regresa_f1) {
+			angulo_f1 -= 5.0;
+			mainWindow.setFlipper1(angulo_f1);
+		}
+
+		// Regresar Flipper 2 a su posicion inicial
+		if (mainWindow.getFlipper2() >= 60.0)
+		{
+			angulo_f2 = 60.0;
+			regresa_f2 = true;
+		}
+		else if (mainWindow.getFlipper2() <= 0.0)
+		{
+			regresa_f2 = false;
+		}
+
+		if (regresa_f2) {
+			angulo_f2 -= 5.0;
+			mainWindow.setFlipper2(angulo_f2);
+		}
+
+		// Regresar Flipper 3 a su posicion inicial
+		if (mainWindow.getFlipper3() >= 60.0)
+		{
+			angulo_f3 = 60.0;
+			regresa_f3 = true;
+		}
+		else if (mainWindow.getFlipper3() <= 0.0)
+		{
+			regresa_f3 = false;
+		}
+
+		if (regresa_f3) {
+			angulo_f3 -= 5.0;
+			mainWindow.setFlipper3(angulo_f3);
+		}
+
+		// Flipper 1
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(3.5f, 48.0f, 21.0f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		model = glm::rotate(model, 10 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, mainWindow.getFlipper1() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Flipper_M.RenderModel();
+
+		// Flipper 2
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(12.5f, 48.0f, 21.0f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		model = glm::rotate(model, -100 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -mainWindow.getFlipper2() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Flipper_M.RenderModel();
+
+		// Flipper 3
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(6.0f, 50.3f, -15.3f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		model = glm::rotate(model, 10 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, mainWindow.getFlipper3() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Flipper_M.RenderModel();
+
 
 		// Canica
 		model = glm::mat4(1.0f);
@@ -283,6 +375,8 @@ int main()
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Moneda_M.RenderModel();
+
+		
 
 		// Gabinete
 		model = glm::mat4(1.0);
