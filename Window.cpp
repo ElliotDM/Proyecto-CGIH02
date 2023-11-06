@@ -173,9 +173,15 @@ void Window::ManejaClick(GLFWwindow* window, int button, int action, int mods)
 			theWindow->rButton = false;
 
 	if (theWindow->rButton)
+	{
 		theWindow->resorte = true;
+		theWindow->animacion = true;
+	}
 	else
+	{
 		theWindow->resorte = false;
+		theWindow->animacion = false;
+	}
 }
 
 Window::~Window()

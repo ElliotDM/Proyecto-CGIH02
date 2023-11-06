@@ -43,6 +43,14 @@ bool regresa_f2;
 float angulo_f3;
 bool regresa_f3;
 
+// Wingmoulds
+bool inicio;
+float pos_wm1_l;
+float pos_wm1_r;
+float arc_wm1;
+float arc_wm1_l;
+float arc_wm1_r;
+
 const float toRadians = 3.14159265f / 180.0f;
 
 Window mainWindow;
@@ -55,6 +63,7 @@ Texture monedaTexture;
 Texture gabineteTexture;
 Texture canicaTexture;
 Texture resorteTexture;
+Texture wingmouldTexture;
 
 Model Gabinete_M;
 Model Moneda_M;
@@ -62,6 +71,9 @@ Model Canica_M;
 Model Resorte_M;
 Model Cristal_M;
 Model Flipper_M;
+Model WingMould_C;
+Model WingMould_L;
+Model WingMould_R;
 
 Skybox skybox;
 
@@ -169,6 +181,8 @@ int main()
 	canicaTexture.LoadTextureA();
 	resorteTexture = Texture("Textures/resorte.png");
 	resorteTexture.LoadTextureA();
+	wingmouldTexture = Texture("Textures/wingmould.png");
+	wingmouldTexture.LoadTextureA();
 	
 	Gabinete_M = Model();
 	Gabinete_M.LoadModel("Models/gabinete.obj");
@@ -180,6 +194,12 @@ int main()
 	Resorte_M.LoadModel("Models/resorte.obj");
 	Flipper_M = Model();
 	Flipper_M.LoadModel("Models/flipper.obj");
+	WingMould_C = Model();
+	WingMould_C.LoadModel("Models/wingmould_C.obj");
+	WingMould_L = Model();
+	WingMould_L.LoadModel("Models/wingmould_L.obj");
+	WingMould_R = Model();
+	WingMould_R.LoadModel("Models/wingmould_R.obj");
 
 	std::vector<std::string> skyboxFaces;
 	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_rt.tga");
@@ -222,6 +242,14 @@ int main()
 	regresa_f2 = false;
 	angulo_f3 = 60.0;
 	regresa_f3 = false;
+
+	// Wingmoulds
+	inicio = false;
+	pos_wm1_l = -0.5;
+	pos_wm1_r = 0.5;
+	arc_wm1 = 0.0;
+	arc_wm1_l = 0.0;
+	arc_wm1_r = 0.0;
 
 	while (!mainWindow.getShouldClose())
 	{
@@ -360,10 +388,121 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Flipper_M.RenderModel();
 
+		// Animacion del objeto jerarquico (Previa)
+		if (mainWindow.getAnimacion())
+		{
+			inicio = true;
+		}
+
+		if (inicio) {
+			// 1
+			if (pos_wm1_r < 1.2) {
+				pos_wm1_r += 0.05;
+				pos_wm1_l -= 0.05;
+			}
+			// 2
+			else if (arc_wm1_r < 30)
+			{
+				arc_wm1_l += 5;
+				arc_wm1_r += 5;
+			}
+			// 3
+			else if (arc_wm1 < 40)
+			{
+				arc_wm1_r += 1;
+				arc_wm1 += 5;
+			}
+			// 4
+			else if (arc_wm1_l < 40)
+			{
+				arc_wm1_l += 5;
+			}
+			else
+			{
+				inicio = false;
+			}
+		}
+		else
+		{
+			pos_wm1_l = -0.5;
+			pos_wm1_r = 0.5;
+			arc_wm1 = 0.0;
+			arc_wm1_l = 0.0;
+			arc_wm1_r = 0.0;
+		}
+
+		// Obstaculos
+
+		// Wingmould (Objeto jerarquico)
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(16.2f, 50.7f, -18.5f));
+		modelaux = model;
+		model = glm::rotate(model, arc_wm1 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_C.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(pos_wm1_l, 0.3f, -0.2f));
+		model = glm::rotate(model, arc_wm1_l * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_L.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(pos_wm1_r, 0.3f, -0.2f));
+		model = glm::rotate(model, -arc_wm1_r * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_R.RenderModel();
+
+		// Wingmould (Objeto jerarquico)
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(15.2f, 50.9f, -23.7f));
+		modelaux = model;
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_C.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_L.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_R.RenderModel();
+
+		// Wingmould (Objeto jerarquico)
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(10.7f, 50.8f, -20.4f));
+		modelaux = model;
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_C.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_L.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_R.RenderModel();
+
+		// Sierra
+
+		// Huevo
 
 		// Canica
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(10.0f, 11.0f, -12.0f));
+		model = glm::translate(model, glm::vec3(22.75f, 48.2f, 27.5f));
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica_M.RenderModel();
@@ -375,8 +514,6 @@ int main()
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Moneda_M.RenderModel();
-
-		
 
 		// Gabinete
 		model = glm::mat4(1.0);

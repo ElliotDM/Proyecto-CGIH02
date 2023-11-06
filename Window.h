@@ -15,6 +15,7 @@ public:
 	GLfloat getYChange();
 
 	GLboolean getResorte() { return resorte; }
+	GLboolean getAnimacion() { return animacion; }
 
 	GLfloat getFlipper1() { return angulo_flipper1; }
 	GLvoid setFlipper1(float a) { angulo_flipper1 = a; }
@@ -48,6 +49,7 @@ private:
 	bool mouseFirstMoved;
 
 	GLboolean resorte = false;
+	GLboolean animacion = false;
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
 	GLfloat angulo_flipper3 = 0.0;
