@@ -26,6 +26,7 @@ public:
 	GLfloat getFlipper3() { return angulo_flipper3; }
 	GLvoid setFlipper3(float a) { angulo_flipper3 = a; }
 
+
 	bool getShouldClose()
 	{
 		return glfwWindowShouldClose(mainWindow);
@@ -50,10 +51,10 @@ private:
 
 	GLboolean resorte = false;
 	GLboolean animacion = false;
+
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
 	GLfloat angulo_flipper3 = 0.0;
-
 
 	static void ManejaTeclado(GLFWwindow *window, int key, int code, int action, int mode);
 	static void ManejaMouse(GLFWwindow *window, double xPos, double yPos);

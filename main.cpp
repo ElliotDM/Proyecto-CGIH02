@@ -35,14 +35,6 @@
 // Resorte
 float zResorte;
 
-// Flippers
-float angulo_f1;
-bool regresa_f1;
-float angulo_f2;
-bool regresa_f2;
-float angulo_f3;
-bool regresa_f3;
-
 // Wingmoulds
 bool inicio;
 float pos_wm1_l;
@@ -64,6 +56,7 @@ Texture gabineteTexture;
 Texture canicaTexture;
 Texture resorteTexture;
 Texture wingmouldTexture;
+Texture sierraTexture;
 
 Model Gabinete_M;
 Model Moneda_M;
@@ -74,6 +67,8 @@ Model Flipper_M;
 Model WingMould_C;
 Model WingMould_L;
 Model WingMould_R;
+Model Sierra_M;
+Model Huevo_M;
 
 Skybox skybox;
 
@@ -171,7 +166,7 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
+	camera = Camera(glm::vec3(10.0f, 70.0f, 30.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
 
 	monedaTexture = Texture("Textures/moneda.png");
 	monedaTexture.LoadTextureA();
@@ -183,6 +178,8 @@ int main()
 	resorteTexture.LoadTextureA();
 	wingmouldTexture = Texture("Textures/wingmould.png");
 	wingmouldTexture.LoadTextureA();
+	sierraTexture = Texture("Textures/saw.png");
+	sierraTexture.LoadTextureA();
 	
 	Gabinete_M = Model();
 	Gabinete_M.LoadModel("Models/gabinete.obj");
@@ -200,6 +197,10 @@ int main()
 	WingMould_L.LoadModel("Models/wingmould_L.obj");
 	WingMould_R = Model();
 	WingMould_R.LoadModel("Models/wingmould_R.obj");
+	Sierra_M = Model();
+	Sierra_M.LoadModel("Models/sierra.obj");
+	Huevo_M = Model();
+	Huevo_M.LoadModel("Models/huevo.obj");
 
 	std::vector<std::string> skyboxFaces;
 	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_rt.tga");
@@ -234,14 +235,6 @@ int main()
 
 	// Resorte
 	zResorte = 0.3;
-
-	// Flippers
-	angulo_f1 = 60.0;
-	regresa_f1 = false;
-	angulo_f2 = 60.0;
-	regresa_f2 = false;
-	angulo_f3 = 60.0;
-	regresa_f3 = false;
 
 	// Wingmoulds
 	inicio = false;
@@ -293,10 +286,17 @@ int main()
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 
 		// Animacion del resorte
+		// Comprimir el resorte
 		if (mainWindow.getResorte() && zResorte >= 0.1)
 		{
 			zResorte -= 0.0005;
 		}
+		// Si el usuario mantiene pulsado el click derecho
+		// mantener el resorte comprimido
+		else if (mainWindow.getResorte())
+		{
+		}
+		// Regresa el resorte a su posicion inicial
 		else if (!(mainWindow.getResorte()) && zResorte <= 0.3) {
 			zResorte += 0.1;
 		}
@@ -312,54 +312,6 @@ int main()
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Resorte_M.RenderModel();
-
-		// Regresar Flipper 1 a su posicion inicial
-		if (mainWindow.getFlipper1() >= 60.0)
-		{
-			angulo_f1 = 60.0;
-			regresa_f1 = true;
-		}
-		else if (mainWindow.getFlipper1() <= 0.0)
-		{
-			regresa_f1 = false;
-		}
-
-		if (regresa_f1) {
-			angulo_f1 -= 5.0;
-			mainWindow.setFlipper1(angulo_f1);
-		}
-
-		// Regresar Flipper 2 a su posicion inicial
-		if (mainWindow.getFlipper2() >= 60.0)
-		{
-			angulo_f2 = 60.0;
-			regresa_f2 = true;
-		}
-		else if (mainWindow.getFlipper2() <= 0.0)
-		{
-			regresa_f2 = false;
-		}
-
-		if (regresa_f2) {
-			angulo_f2 -= 5.0;
-			mainWindow.setFlipper2(angulo_f2);
-		}
-
-		// Regresar Flipper 3 a su posicion inicial
-		if (mainWindow.getFlipper3() >= 60.0)
-		{
-			angulo_f3 = 60.0;
-			regresa_f3 = true;
-		}
-		else if (mainWindow.getFlipper3() <= 0.0)
-		{
-			regresa_f3 = false;
-		}
-
-		if (regresa_f3) {
-			angulo_f3 -= 5.0;
-			mainWindow.setFlipper3(angulo_f3);
-		}
 
 		// Flipper 1
 		model = glm::mat4(1.0);
@@ -496,9 +448,21 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WingMould_R.RenderModel();
 
-		// Sierra
-
 		// Huevo
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-1.7f, 49.0f, 5.4f));
+		modelaux = model;
+		model = glm::scale(model, glm::vec3(0.7f, 0.7f, 0.7f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Huevo_M.RenderModel();
+
+		// Sierra
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(7.0f, 49.8f, -9.0f));
+		modelaux = model;
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Sierra_M.RenderModel();
 
 		// Canica
 		model = glm::mat4(1.0f);
@@ -516,6 +480,7 @@ int main()
 		Moneda_M.RenderModel();
 
 		// Gabinete
+		// TODO mover gabinete, modelo jerarquico
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
