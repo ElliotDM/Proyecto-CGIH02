@@ -14,18 +14,15 @@ public:
 	GLfloat getXChange();
 	GLfloat getYChange();
 
+	GLboolean getMoneda() { return moneda; }
+	GLvoid setMoneda(bool m) { moneda = m; }
+
+
 	GLboolean getResorte() { return resorte; }
 	GLboolean getAnimacion() { return animacion; }
 
 	GLfloat getFlipper1() { return angulo_flipper1; }
-	GLvoid setFlipper1(float a) { angulo_flipper1 = a; }
-
 	GLfloat getFlipper2() { return angulo_flipper2; }
-	GLvoid setFlipper2(float a) { angulo_flipper2 = a; }
-
-	GLfloat getFlipper3() { return angulo_flipper3; }
-	GLvoid setFlipper3(float a) { angulo_flipper3 = a; }
-
 
 	bool getShouldClose()
 	{
@@ -49,12 +46,12 @@ private:
 	GLboolean rButton = false;
 	bool mouseFirstMoved;
 
+	GLboolean moneda = false;
 	GLboolean resorte = false;
 	GLboolean animacion = false;
 
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
-	GLfloat angulo_flipper3 = 0.0;
 
 	static void ManejaTeclado(GLFWwindow *window, int key, int code, int action, int mode);
 	static void ManejaMouse(GLFWwindow *window, double xPos, double yPos);

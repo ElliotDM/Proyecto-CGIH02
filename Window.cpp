@@ -103,6 +103,11 @@ void Window::ManejaTeclado(GLFWwindow *window, int key, int code, int action, in
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 
+	if (key == GLFW_KEY_P)
+	{
+		theWindow->moneda = true;
+	}
+
 	if (key == GLFW_KEY_Z and action == GLFW_PRESS)
 	{
 		theWindow->angulo_flipper1 = 60.0;
@@ -119,15 +124,6 @@ void Window::ManejaTeclado(GLFWwindow *window, int key, int code, int action, in
 	else if (key == GLFW_KEY_X and action == GLFW_RELEASE)
 	{
 		theWindow->angulo_flipper2 = 0.0;
-	}
-
-	if (key == GLFW_KEY_M and action == GLFW_PRESS)
-	{
-		theWindow->angulo_flipper3 = 60.0;
-	}
-	else if (key == GLFW_KEY_M and action == GLFW_RELEASE)
-	{
-		theWindow->angulo_flipper3 = 0.0;
 	}
 
 	if (key >= 0 && key < 1024)

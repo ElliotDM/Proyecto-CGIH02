@@ -32,8 +32,28 @@
 
 // Variables y banderas para animacion
 
+// Offsets
+float moneda_offset;
+float canica_offset;
+float rot_offset;
+
+// Moneda
+float mov_moneda;
+float rot_moneda;
+bool animacion;
+
 // Resorte
+bool resorte;
+bool espera;
 float zResorte;
+
+// Canica
+float movx_canica;
+float movy_canica;
+float movz_canica;
+float rot_canica;
+bool canica_init;
+bool canica_mov;
 
 // Wingmoulds
 bool inicio;
@@ -166,7 +186,7 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(10.0f, 70.0f, 30.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
+	camera = Camera(glm::vec3(10.0f, 80.0f, 40.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
 
 	monedaTexture = Texture("Textures/moneda.png");
 	monedaTexture.LoadTextureA();
@@ -233,8 +253,28 @@ int main()
 
 	// Inicializacion de variables para animacion
 
+	// Offsets
+	moneda_offset = 0.03f;
+	canica_offset = 0.05f;
+	rot_offset = 2.0f;
+
+	// Moneda
+	mov_moneda = 33.0f;
+	rot_moneda = 0.0f;
+	animacion = true;
+
 	// Resorte
+	resorte = false;
+	espera = false;
 	zResorte = 0.3;
+
+	// Canica 
+	movx_canica = 18.5f;
+	movy_canica = 48.0f;
+	movz_canica = 24.0f;
+	rot_canica = 0.0f;
+	canica_init = false;
+	canica_mov = false;
 
 	// Wingmoulds
 	inicio = false;
@@ -285,61 +325,71 @@ int main()
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 
-		// Animacion del resorte
-		// Comprimir el resorte
-		if (mainWindow.getResorte() && zResorte >= 0.1)
-		{
-			zResorte -= 0.0005;
-		}
-		// Si el usuario mantiene pulsado el click derecho
-		// mantener el resorte comprimido
-		else if (mainWindow.getResorte())
-		{
-		}
-		// Regresa el resorte a su posicion inicial
-		else if (!(mainWindow.getResorte()) && zResorte <= 0.3) {
-			zResorte += 0.1;
-		}
-		else
-		{
-			zResorte = 0.3;
-		}
+		/* Animaciones */
 
+		// Moneda
+		// Inserta moneda y comienza la animacion
+		if (mainWindow.getMoneda() && animacion)
+		{
+			if (mov_moneda > 28.0)
+			{
+				mov_moneda -= moneda_offset * deltaTime;
+				rot_moneda += rot_offset * deltaTime;
+			}
+			else {
+				canica_init = true;
+				animacion = false;
+				mainWindow.setMoneda(false);
+			}
+		}
+		// Canica (posicionamiento)
+		else if (canica_init)
+		{
+			// La canica rueda y se coloca en el resorte 22.75f, 48.0f, 24.0f
+			if (movx_canica <= 22.75)
+			{
+				movx_canica += canica_offset * deltaTime;
+				rot_canica += rot_offset * deltaTime;
+			}
+			else
+			{
+				resorte = true;
+				canica_init = false;
+			}
+		}
 		// Resorte
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(22.75f, 48.0f, 27.0f));
-		model = glm::scale(model, glm::vec3(0.2f, 0.2f, zResorte));
-		model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Resorte_M.RenderModel();
+		else if (resorte)
+		{
+			// Espera a que el usuario compacte el resorte
+			if (espera)
+			{
+				resorte = false;
+				espera = false;
+				canica_mov = true;
+			}
+			// Comprimir el resorte
+			else if (mainWindow.getResorte() && zResorte >= 0.1)
+			{
+				zResorte -= 0.0005;
+				movz_canica += (canica_offset / 2) * deltaTime;
+			}
+			// Si el usuario mantiene pulsado el click derecho
+			// mantener el resorte comprimido
+			else if (mainWindow.getResorte())
+			{
+			}
+			// Regresa el resorte a su posicion inicial
+			else if (!(mainWindow.getResorte()) && zResorte < 0.3) {
+				zResorte = 0.3;
+				espera = true;
+			}
+		}
+		// Canica (recorrido)
+		else if (canica_mov)
+		{
 
-		// Flipper 1
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(3.5f, 48.0f, 21.0f));
-		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
-		model = glm::rotate(model, 10 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, mainWindow.getFlipper1() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Flipper_M.RenderModel();
-
-		// Flipper 2
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(12.5f, 48.0f, 21.0f));
-		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
-		model = glm::rotate(model, -100 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, -mainWindow.getFlipper2() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Flipper_M.RenderModel();
-
-		// Flipper 3
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(6.0f, 50.3f, -15.3f));
-		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
-		model = glm::rotate(model, 10 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, mainWindow.getFlipper3() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Flipper_M.RenderModel();
-
+		}
+		
 		// Animacion del objeto jerarquico (Previa)
 		if (mainWindow.getAnimacion())
 		{
@@ -383,7 +433,70 @@ int main()
 			arc_wm1_r = 0.0;
 		}
 
-		// Obstaculos
+
+		/* Modelos */
+
+		// Gabinete
+		// TODO mover gabinete, modelo jerarquico
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Gabinete_M.RenderModel();
+
+		// Moneda
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(13.0f, 39.5f, mov_moneda));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, rot_moneda * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Moneda_M.RenderModel();
+
+		// Resorte
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(22.75f, 48.0f, 27.0f));
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, zResorte));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Resorte_M.RenderModel();
+
+		// Canica 1
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(movx_canica, movy_canica, movz_canica));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Canica_M.RenderModel();
+
+		// Flipper 1
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(3.5f, 48.0f, 21.0f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		model = glm::rotate(model, 10 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, mainWindow.getFlipper1() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Flipper_M.RenderModel();
+
+		// Flipper 2
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(12.5f, 48.0f, 21.0f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		model = glm::rotate(model, -100 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -mainWindow.getFlipper2() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Flipper_M.RenderModel();
+
+		// Flipper 3
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(6.0f, 50.3f, -15.3f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		model = glm::rotate(model, 10 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, mainWindow.getFlipper1() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Flipper_M.RenderModel();
+
+		/* Obstaculos */
 
 		// Wingmould (Objeto jerarquico)
 		model = glm::mat4(1.0f);
@@ -463,34 +576,7 @@ int main()
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Sierra_M.RenderModel();
-
-		// Canica
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(22.75f, 48.2f, 27.5f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica_M.RenderModel();
-
-		// Moneda
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-3.65f, 8.0f, -1.8f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Moneda_M.RenderModel();
-
-		// Gabinete
-		// TODO mover gabinete, modelo jerarquico
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
-		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Gabinete_M.RenderModel();
-		//blending: transparencia o traslucidez
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
-
+		
 		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}
