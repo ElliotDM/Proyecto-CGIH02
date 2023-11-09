@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <thread>
 #include <cmath>
 #include <vector>
 #include <math.h>
@@ -46,22 +47,32 @@ bool animacion;
 bool resorte;
 bool espera;
 float zResorte;
+float zManija;
 
 // Canica
 float movx_canica;
 float movy_canica;
 float movz_canica;
 float rot_canica;
+float t_curva;
 bool canica_init;
-bool canica_mov;
+bool canica_animacion;
+bool subida;
+bool salida;
+bool choca;
+bool curva;
 
 // Wingmoulds
-bool inicio;
-float pos_wm1_l;
-float pos_wm1_r;
-float arc_wm1;
-float arc_wm1_l;
-float arc_wm1_r;
+bool wm1_inicio;
+float wm1_izq;
+float wm1_der;
+float wm1_arc;
+float wm1_arc_der_x;
+float wm1_arc_der_z;
+float wm1_arc_izq_x;
+float wm1_arc_izq_z;
+int wm1_cont1;
+int wm1_cont2;
 
 const float toRadians = 3.14159265f / 180.0f;
 
@@ -82,6 +93,8 @@ Model Gabinete_M;
 Model Moneda_M;
 Model Canica_M;
 Model Resorte_M;
+Model Manija_M;
+Model ManijaRes_M;
 Model Cristal_M;
 Model Flipper_M;
 Model WingMould_C;
@@ -203,6 +216,10 @@ int main()
 	
 	Gabinete_M = Model();
 	Gabinete_M.LoadModel("Models/gabinete.obj");
+	Manija_M = Model();
+	Manija_M.LoadModel("Models/manija.obj");
+	ManijaRes_M = Model();
+	ManijaRes_M.LoadModel("Models/manija_res.obj");
 	Moneda_M = Model();
 	Moneda_M.LoadModel("Models/moneda.obj");
 	Canica_M = Model();
@@ -267,6 +284,7 @@ int main()
 	resorte = false;
 	espera = false;
 	zResorte = 0.3;
+	zManija = 50.0;
 
 	// Canica 
 	movx_canica = 18.5f;
@@ -274,15 +292,24 @@ int main()
 	movz_canica = 24.0f;
 	rot_canica = 0.0f;
 	canica_init = false;
-	canica_mov = false;
+	canica_animacion = false;
+	subida = true;
+	salida = false;
+	choca = false;
+	curva = false;
+	t_curva = 0.0f;
 
 	// Wingmoulds
-	inicio = false;
-	pos_wm1_l = -0.5;
-	pos_wm1_r = 0.5;
-	arc_wm1 = 0.0;
-	arc_wm1_l = 0.0;
-	arc_wm1_r = 0.0;
+	wm1_inicio = false;
+	wm1_izq = -0.5;
+	wm1_der = 0.5;
+	wm1_arc = 0.0;
+	wm1_arc_der_x = 0.0;
+	wm1_arc_der_z = 0.0;
+	wm1_arc_izq_x = 0.0;
+	wm1_arc_izq_z = 0.0;
+	wm1_cont1 = 0;
+	wm1_cont2 = 0;
 
 	while (!mainWindow.getShouldClose())
 	{
@@ -327,117 +354,273 @@ int main()
 
 		/* Animaciones */
 
-		// Moneda
-		// Inserta moneda y comienza la animacion
-		if (mainWindow.getMoneda() && animacion)
+		if (mainWindow.getReset())
 		{
-			if (mov_moneda > 28.0)
-			{
-				mov_moneda -= moneda_offset * deltaTime;
-				rot_moneda += rot_offset * deltaTime;
-			}
-			else {
-				canica_init = true;
-				animacion = false;
-				mainWindow.setMoneda(false);
-			}
+			animacion = true;
+
+			// Moneda
+			mov_moneda = 33.0f;
+			rot_moneda = 0.0f;
+			animacion = true;
+
+			// Resorte
+			resorte = false;
+			espera = false;
+			zResorte = 0.3;
+
+			// Canica 
+			movx_canica = 18.5f;
+			movy_canica = 48.0f;
+			movz_canica = 24.0f;
+			rot_canica = 0.0f;
+			canica_init = false;
+			canica_animacion = false;
+			subida = true;
+			salida = false;
+			t_curva = 0.0f;
+			mainWindow.setReset(false);
+			mainWindow.setMoneda(false);
 		}
-		// Canica (posicionamiento)
-		else if (canica_init)
+		else
 		{
-			// La canica rueda y se coloca en el resorte 22.75f, 48.0f, 24.0f
-			if (movx_canica <= 22.75)
+			// Moneda
+			// Inserta moneda y comienza la animacion
+			if (mainWindow.getMoneda() && animacion)
 			{
-				movx_canica += canica_offset * deltaTime;
-				rot_canica += rot_offset * deltaTime;
+				if (mov_moneda > 28.0)
+				{
+					mov_moneda -= moneda_offset * deltaTime;
+					rot_moneda += rot_offset * deltaTime;
+				}
+				else {
+					canica_init = true;
+					animacion = false;
+					mainWindow.setMoneda(false);
+				}
 			}
+			// Canica (posicionamiento)
+			else if (canica_init)
+			{
+				// La canica rueda y se coloca en el resorte
+				if (movx_canica <= 22.75)
+				{
+					movx_canica += canica_offset * deltaTime;
+					rot_canica += rot_offset * deltaTime;
+				}
+				else
+				{
+					resorte = true;
+					canica_init = false;
+				}
+			}
+			// Resorte
+			else if (resorte)
+			{
+				// Espera a que el usuario compacte el resorte
+				if (espera)
+				{
+					resorte = false;
+					espera = false;
+					canica_animacion = true;
+				}
+				// Comprimir el resorte
+				else if (mainWindow.getResorte() && zResorte >= 0.1)
+				{
+					zResorte -= 0.0005;
+					zManija += 0.005;
+					movz_canica += (canica_offset / 2) * deltaTime;
+				}
+				// Si el usuario mantiene pulsado el click derecho
+				// mantener el resorte comprimido
+				else if (mainWindow.getResorte())
+				{
+				}
+				// Regresa el resorte a su posicion inicial
+				else if (!(mainWindow.getResorte()) && zResorte < 0.3) {
+					zResorte = 0.3;
+					zManija = 50.0;
+					espera = true;
+				}
+			}
+			// Canica (recorrido)
+			else if (canica_animacion)
+			{
+				// La canica sale disparada
+				if (subida)
+				{
+					if (movz_canica >= -22.5)
+					{
+						movz_canica -= canica_offset * deltaTime * 4;
+						movy_canica += 0.01 * deltaTime;
+						rot_canica += rot_offset * deltaTime;
+					}
+					else
+					{
+						subida = false;
+						salida = true;
+					}
+				}
+				// Curva de salida
+				else if (salida)
+				{
+					// Sigue una trayectoria de un circulo de
+					// radio 9 y centro en 19.5, 50.3, -22.5
+					if (t_curva <= 3.0)
+					{
+						if (movy_canica <= 50.6)
+						{
+							movy_canica += 0.0001;
+						}
+
+						t_curva += 0.01;
+						movx_canica = 19.5 + (3 * glm::cos(t_curva));
+						movz_canica = -22.5 - (3 * glm::sin(t_curva));
+					}
+					else
+					{
+						t_curva = -0.4f;
+						salida = false;
+						choca = true;
+
+						// Aumentar puntuacion (cambiar textura)
+					}
+				}
+				// Canica choca con obstaculo y rebota
+				else if (choca)
+				{
+					if (wm1_inicio){}
+					else
+					{
+						wm1_inicio = true;
+					}
+					// Sigue una trayectoria de un circulo de
+					// radio 29.08 y centro en -10.47, 50.1, -12.05
+					if (t_curva <= 0.4)
+					{
+						if (movy_canica >= 49.0)
+						{
+							movy_canica -= 0.0001;
+						}
+
+						t_curva += 0.001;
+						movx_canica = -10.47 + (glm::sqrt(845.92) * glm::cos(t_curva));
+						movz_canica = -12.05 + (glm::sqrt(845.92) * glm::sin(t_curva));
+					}
+					else
+					{
+						t_curva = 0.0f;
+						choca = false;
+						curva = true;
+						/*std::cout << std::endl;
+						std::cout << movx_canica << std::endl;
+						std::cout << movy_canica << std::endl;
+						std::cout << movz_canica << std::endl;*/
+					}
+				}
+				else if (curva)
+				{
+					canica_animacion = false;
+				}
+			}
+			// La animacion cominza de nuevo
 			else
 			{
-				resorte = true;
-				canica_init = false;
-			}
-		}
-		// Resorte
-		else if (resorte)
-		{
-			// Espera a que el usuario compacte el resorte
-			if (espera)
-			{
+				animacion = true;
+
+				// Moneda
+				mov_moneda = 33.0f;
+				rot_moneda = 0.0f;
+				animacion = true;
+
+				// Resorte
 				resorte = false;
 				espera = false;
-				canica_mov = true;
-			}
-			// Comprimir el resorte
-			else if (mainWindow.getResorte() && zResorte >= 0.1)
-			{
-				zResorte -= 0.0005;
-				movz_canica += (canica_offset / 2) * deltaTime;
-			}
-			// Si el usuario mantiene pulsado el click derecho
-			// mantener el resorte comprimido
-			else if (mainWindow.getResorte())
-			{
-			}
-			// Regresa el resorte a su posicion inicial
-			else if (!(mainWindow.getResorte()) && zResorte < 0.3) {
 				zResorte = 0.3;
-				espera = true;
+
+				// Canica 
+				movx_canica = 18.5f;
+				movy_canica = 48.0f;
+				movz_canica = 24.0f;
+				rot_canica = 0.0f;
+				canica_init = false;
+				canica_animacion = false;
+				subida = true;
+				salida = false;
 			}
-		}
-		// Canica (recorrido)
-		else if (canica_mov)
-		{
 
 		}
 		
-		// Animacion del objeto jerarquico (Previa)
-		if (mainWindow.getAnimacion())
-		{
-			inicio = true;
-		}
-
-		if (inicio) {
+		// Animacion del objeto jerarquico
+		if (wm1_inicio) {
 			// 1
-			if (pos_wm1_r < 1.2) {
-				pos_wm1_r += 0.05;
-				pos_wm1_l -= 0.05;
+			if (wm1_der < 1.2) {
+				wm1_der += 0.05;
+				wm1_izq -= 0.05;
 			}
 			// 2
-			else if (arc_wm1_r < 30)
+			else if (wm1_arc_izq_z < 30)
 			{
-				arc_wm1_l += 5;
-				arc_wm1_r += 5;
+				wm1_arc_der_z += 5;
+				wm1_arc_izq_z += 5;
 			}
 			// 3
-			else if (arc_wm1 < 40)
+			else if (wm1_arc < 40)
 			{
-				arc_wm1_r += 1;
-				arc_wm1 += 5;
+				wm1_arc_izq_z += 1;
+				wm1_arc += 5;
 			}
 			// 4
-			else if (arc_wm1_l < 40)
+			else if (wm1_arc_der_z < 40)
 			{
-				arc_wm1_l += 5;
+				wm1_arc_der_z += 5;
+			}
+			else if ((int)now % 2 == 0)
+			{
+				wm1_cont1++;
+			}
+			else 
+			{ 
+				wm1_cont1 = 0; 
+			}
+
+			if (wm1_cont1 == 1)
+			{
+				wm1_cont2++;
+			}
+
+			if (wm1_cont2 == 1)
+			{
+				wm1_cont2 = 0;
+				wm1_inicio = false;
 			}
 			else
 			{
-				inicio = false;
+				if (wm1_arc_der_x <= 30.0)
+				{
+					wm1_arc_der_x += 10.0;
+					wm1_arc_izq_x -= 10.0;
+				}
+				else if (wm1_arc_izq_x <= 0.0)
+				{
+					wm1_arc_der_x -= 10.0;
+					wm1_arc_izq_x += 10.0;
+				}
 			}
 		}
 		else
 		{
-			pos_wm1_l = -0.5;
-			pos_wm1_r = 0.5;
-			arc_wm1 = 0.0;
-			arc_wm1_l = 0.0;
-			arc_wm1_r = 0.0;
+			wm1_izq = -0.5;
+			wm1_der = 0.5;
+			wm1_arc = 0.0;
+			wm1_arc_der_x = 0.0;
+			wm1_arc_der_z = 0.0;
+			wm1_arc_izq_x = 0.0;
+			wm1_arc_izq_z = 0.0;
 		}
-
 
 		/* Modelos */
 
 		// Gabinete
-		// TODO mover gabinete, modelo jerarquico
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
@@ -460,6 +643,20 @@ int main()
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Resorte_M.RenderModel();
+
+		// Resorte manija
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(22.8f, 47.2f, 32.4f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, zManija));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		ManijaRes_M.RenderModel();
+
+		// Manija
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(22.8f, 47.1f, 32.7f - zResorte));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Manija_M.RenderModel();
 
 		// Canica 1
 		model = glm::mat4(1.0f);
@@ -489,41 +686,63 @@ int main()
 
 		// Flipper 3
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(6.0f, 50.3f, -15.3f));
+		model = glm::translate(model, glm::vec3(13.7f, 50.1f, -13.2f));
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
-		model = glm::rotate(model, 10 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, mainWindow.getFlipper1() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -mainWindow.getFlipper1() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Flipper_M.RenderModel();
 
 		/* Obstaculos */
 
-		// Wingmould (Objeto jerarquico)
+		// Wingmould (Objeto jerarquico) 15.2f, 50.9f, -23.5f
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(16.2f, 50.7f, -18.5f));
+		model = glm::translate(model, glm::vec3(15.2f, 50.9f, -23.5f));
 		modelaux = model;
-		model = glm::rotate(model, arc_wm1 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::rotate(model, wm1_arc * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WingMould_C.RenderModel();
 
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(pos_wm1_l, 0.3f, -0.2f));
-		model = glm::rotate(model, arc_wm1_l * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::translate(model, glm::vec3(wm1_izq, 0.3f, -0.2f));
+		model = glm::rotate(model, wm1_arc_der_x * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, wm1_arc_der_z * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WingMould_L.RenderModel();
 
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(pos_wm1_r, 0.3f, -0.2f));
-		model = glm::rotate(model, -arc_wm1_r * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::translate(model, glm::vec3(wm1_der, 0.3f, -0.2f));
+		model = glm::rotate(model, wm1_arc_izq_x * toRadians, glm::vec3(0.0f, 1.0f, 1.0f));
+		model = glm::rotate(model, -wm1_arc_izq_z * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WingMould_R.RenderModel();
 
-		// Wingmould (Objeto jerarquico)
+		// Wingmould (Objeto jerarquico) 16.2f, 50.7f, -18.5f
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(15.2f, 50.9f, -23.7f));
+		model = glm::translate(model, glm::vec3(16.2f, 50.7f, -18.5f));
+		modelaux = model;
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_C.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_L.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_R.RenderModel();
+
+		// Wingmould (Objeto jerarquico) 10.7f, 50.8f, -20.2f
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(10.7f, 50.8f, -20.4f));
 		modelaux = model;
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -543,7 +762,47 @@ int main()
 
 		// Wingmould (Objeto jerarquico)
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(10.7f, 50.8f, -20.4f));
+		model = glm::translate(model, glm::vec3(9.7f, 49.0f, 4.6f));
+		modelaux = model;
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_C.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_L.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_R.RenderModel();
+
+		// Wingmould (Objeto jerarquico)
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(5.2f, 48.9f, 8.2f));
+		modelaux = model;
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_C.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_L.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WingMould_R.RenderModel();
+
+		// Wingmould (Objeto jerarquico)
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(4.4f, 48.9f, 2.3f));
 		modelaux = model;
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -564,7 +823,12 @@ int main()
 		// Huevo
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-1.7f, 49.0f, 5.4f));
-		modelaux = model;
+		model = glm::scale(model, glm::vec3(0.7f, 0.7f, 0.7f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Huevo_M.RenderModel();
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(20.2f, 48.8f, 6.5f));
 		model = glm::scale(model, glm::vec3(0.7f, 0.7f, 0.7f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Huevo_M.RenderModel();
@@ -572,11 +836,23 @@ int main()
 		// Sierra
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(7.0f, 49.8f, -9.0f));
-		modelaux = model;
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Sierra_M.RenderModel();
-		
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(15.0f, 49.6f, -5.0f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Sierra_M.RenderModel();
+
+		/*model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(18.0, 49.0, -18.0));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Canica_M.RenderModel();*/
+
 		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}

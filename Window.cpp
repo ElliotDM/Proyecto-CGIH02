@@ -37,7 +37,7 @@ int Window::Initialise()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 	// CREAR VENTANA
-	mainWindow = glfwCreateWindow(width, height, "Practica 08: Iluminacion 2", NULL, NULL);
+	mainWindow = glfwCreateWindow(width, height, "Pinball of Pain", NULL, NULL);
 
 	if (!mainWindow)
 	{
@@ -103,9 +103,14 @@ void Window::ManejaTeclado(GLFWwindow *window, int key, int code, int action, in
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 
-	if (key == GLFW_KEY_P)
+	if (key == GLFW_KEY_M)
 	{
 		theWindow->moneda = true;
+	}
+
+	if (key == GLFW_KEY_R)
+	{
+		theWindow->reset = true;
 	}
 
 	if (key == GLFW_KEY_Z and action == GLFW_PRESS)

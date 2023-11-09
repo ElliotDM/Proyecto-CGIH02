@@ -17,6 +17,8 @@ public:
 	GLboolean getMoneda() { return moneda; }
 	GLvoid setMoneda(bool m) { moneda = m; }
 
+	GLboolean getReset() { return reset; }
+	GLvoid setReset(bool m) { reset = m; }
 
 	GLboolean getResorte() { return resorte; }
 	GLboolean getAnimacion() { return animacion; }
@@ -47,6 +49,7 @@ private:
 	bool mouseFirstMoved;
 
 	GLboolean moneda = false;
+	GLboolean reset = false;
 	GLboolean resorte = false;
 	GLboolean animacion = false;
 
