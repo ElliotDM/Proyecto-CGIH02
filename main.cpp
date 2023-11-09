@@ -61,6 +61,7 @@ bool subida;
 bool salida;
 bool choca;
 bool curva;
+bool choca1;
 
 // Wingmoulds
 bool wm1_inicio;
@@ -291,13 +292,14 @@ int main()
 	movy_canica = 48.0f;
 	movz_canica = 24.0f;
 	rot_canica = 0.0f;
+	t_curva = 0.0f;
 	canica_init = false;
 	canica_animacion = false;
 	subida = true;
 	salida = false;
 	choca = false;
 	curva = false;
-	t_curva = 0.0f;
+	choca1 = false;
 
 	// Wingmoulds
 	wm1_inicio = false;
@@ -373,11 +375,14 @@ int main()
 			movy_canica = 48.0f;
 			movz_canica = 24.0f;
 			rot_canica = 0.0f;
+			t_curva = 0.0f;
 			canica_init = false;
 			canica_animacion = false;
 			subida = true;
 			salida = false;
-			t_curva = 0.0f;
+			choca = false;
+			curva = false;
+			choca1 = false;
 			mainWindow.setReset(false);
 			mainWindow.setMoneda(false);
 		}
@@ -463,8 +468,7 @@ int main()
 				// Curva de salida
 				else if (salida)
 				{
-					// Sigue una trayectoria de un circulo de
-					// radio 9 y centro en 19.5, 50.3, -22.5
+					// Sigue una trayectoria de un circulo
 					if (t_curva <= 3.0)
 					{
 						if (movy_canica <= 50.6)
@@ -493,8 +497,7 @@ int main()
 					{
 						wm1_inicio = true;
 					}
-					// Sigue una trayectoria de un circulo de
-					// radio 29.08 y centro en -10.47, 50.1, -12.05
+					// Sigue una trayectoria de un circulo
 					if (t_curva <= 0.4)
 					{
 						if (movy_canica >= 49.0)
@@ -508,18 +511,63 @@ int main()
 					}
 					else
 					{
-						t_curva = 0.0f;
+						t_curva = -2.85f;
 						choca = false;
 						curva = true;
-						/*std::cout << std::endl;
-						std::cout << movx_canica << std::endl;
-						std::cout << movy_canica << std::endl;
-						std::cout << movz_canica << std::endl;*/
 					}
 				}
+				// Canica continua su camino por el tablero
 				else if (curva)
 				{
-					canica_animacion = false;
+					if (t_curva >= -3.1)
+					{
+						if (movy_canica >= 48.35)
+						{
+							movy_canica -= 0.001;
+						}
+
+						t_curva -= 0.0005;
+						movx_canica = 73.12 + (glm::sqrt(3503.15) * glm::cos(t_curva));
+						movz_canica = 15.88 + (glm::sqrt(3503.15) * glm::sin(t_curva));
+					}
+					else
+					{
+						t_curva = -0.46f;
+						curva = false;
+						choca1 = true;
+					}
+				}
+				// Canica choca y cae entre los flippers
+				else if (choca1)
+				{
+					if (t_curva >= -3.4)
+					{
+						if (movx_canica >= 11.11)
+						{
+							movy_canica += 0.001;
+						}
+						else if (movy_canica >= 48.3)
+						{
+							movy_canica -= 0.001;
+						}
+
+						t_curva -= 0.01;
+						movx_canica = 11.11 + (glm::sqrt(10.32) * glm::cos(t_curva));
+						movz_canica = 14.21 + (glm::sqrt(10.32) * glm::sin(t_curva));
+					}
+					else
+					{
+						if (movz_canica <= 26.0)
+						{
+							movz_canica += 0.05;
+						}
+						else
+						{
+							choca1 = false;
+							canica_animacion = false;
+						}
+						
+					}
 				}
 			}
 			// La animacion cominza de nuevo
@@ -542,12 +590,15 @@ int main()
 				movy_canica = 48.0f;
 				movz_canica = 24.0f;
 				rot_canica = 0.0f;
+				t_curva = 0.0f;
 				canica_init = false;
 				canica_animacion = false;
 				subida = true;
 				salida = false;
+				choca = false;
+				curva = false;
+				choca1 = false;
 			}
-
 		}
 		
 		// Animacion del objeto jerarquico
@@ -616,6 +667,8 @@ int main()
 			wm1_arc_der_z = 0.0;
 			wm1_arc_izq_x = 0.0;
 			wm1_arc_izq_z = 0.0;
+			wm1_cont1 = 0;
+			wm1_cont2 = 0;
 		}
 
 		/* Modelos */
@@ -847,7 +900,21 @@ int main()
 		Sierra_M.RenderModel();
 
 		/*model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(18.0, 49.0, -18.0));
+		model = glm::translate(model, glm::vec3(14.0, 48.3, 12.8));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Canica_M.RenderModel();
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(11.0, 49.0, 11.0));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Canica_M.RenderModel();
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(8.0, 49.0, 15.0));
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
 		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
