@@ -22,7 +22,7 @@
 #include"Model.h"
 #include "Skybox.h"
 
-//para iluminación
+//para iluminaciï¿½n
 #include "CommonValues.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
@@ -53,7 +53,8 @@ GLfloat lastTime = 0.0f;
 static double limitFPS = 1.0 / 60.0;
 
 // luz direccional
-DirectionalLight mainLight;
+DirectionalLight mainLightDay;
+DirectionalLight mainLightNight;
 // luces de tipo pointlight
 PointLight pointLights[MAX_POINT_LIGHTS];
 // luces de tipo spotlight
@@ -66,7 +67,7 @@ static const char* vShader = "shaders/shader_light.vert";
 static const char* fShader = "shaders/shader_light.frag";
 
 
-//función de calculo de normales por promedio de vértices 
+//funciï¿½n de calculo de normales por promedio de vï¿½rtices 
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
 	unsigned int vLength, unsigned int normalOffset)
 {
@@ -156,19 +157,31 @@ int main()
 	Resorte_M = Model();
 	Resorte_M.LoadModel("Models/resorte.obj");
 
-	std::vector<std::string> skyboxFaces;
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_rt.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_lf.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_dn.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_up.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_bk.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_ft.tga");
+	std::vector<std::string> skyboxFacesDay;
+	skyboxFacesDay.push_back("Textures/Skybox/day_lf.png");
+	skyboxFacesDay.push_back("Textures/Skybox/day_rt.png");
+	skyboxFacesDay.push_back("Textures/Skybox/day_dn.png");
+	skyboxFacesDay.push_back("Textures/Skybox/day_up.png");
+	skyboxFacesDay.push_back("Textures/Skybox/day_bk.png");
+	skyboxFacesDay.push_back("Textures/Skybox/day_ft.png");
 
-	skybox = Skybox(skyboxFaces);
+	std::vector<std::string> skyboxFacesNight;
+	skyboxFacesNight.push_back("Textures/Skybox/night_rt.png");
+	skyboxFacesNight.push_back("Textures/Skybox/night_lf.png");
+	skyboxFacesNight.push_back("Textures/Skybox/night_dn.png");
+	skyboxFacesNight.push_back("Textures/Skybox/night_up.png");
+	skyboxFacesNight.push_back("Textures/Skybox/night_bk.png");
+	skyboxFacesNight.push_back("Textures/Skybox/night_ft.png");
+
+	skybox = Skybox(skyboxFacesDay);
 
 	//luz direccional
-	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
-		0.3f, 0.3f,
+	mainLightDay = DirectionalLight(1.0f, 1.0f, 1.0f,
+		0.7f, 0.7f,
+		0.0f, 0.0f, -1.0f);
+
+	mainLightNight = DirectionalLight(1.0f, 1.0f, 1.0f,
+		0.2f, 0.2f,
 		0.0f, 0.0f, -1.0f);
 
 	//contador de luces puntuales
@@ -181,6 +194,11 @@ int main()
 		uniformSpecularIntensity = 0, uniformShininess = 0;
 	GLuint uniformColor = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
+
+	//Variables para el contador de dia y noche
+	bool day =  true;
+	int counterHour = 0;
+	int counterDay = 0;
 
 	while (!mainWindow.getShouldClose())
 	{
@@ -205,7 +223,7 @@ int main()
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
 
-		// información en el shader de intensidad especular y brillo
+		// informaciï¿½n en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
 		uniformShininess = shaderList[0].GetShininessLocation();
 
@@ -213,8 +231,36 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		// información al shader de fuentes de iluminación
-		shaderList[0].SetDirectionalLight(&mainLight);
+		// informaciï¿½n al shader de fuentes de iluminaciï¿½n
+
+		//Para el cambio entre dia y noche
+		if ((int)now % 2 == 0)
+		{
+			counterHour++;
+		}
+		else counterHour = 0;
+		if (counterHour == 1)
+		{
+			counterDay++;
+		}
+		if (counterDay == 10)
+		{
+			counterDay = 0;
+			if (day)
+			{
+				shaderList[0].SetDirectionalLight(&mainLightDay);
+				skybox = Skybox(skyboxFacesDay);
+				day = false;
+			}
+			else
+			{
+				shaderList[0].SetDirectionalLight(&mainLightNight);
+				skybox = Skybox(skyboxFacesNight);
+				day = true;
+			}
+		}
+
+
 		shaderList[0].SetPointLights(pointLights, pointLightCount);
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
 
