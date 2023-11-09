@@ -22,7 +22,8 @@
 #include"Model.h"
 #include "Skybox.h"
 
-//para iluminaci�n
+
+//para iluminación
 #include "CommonValues.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
@@ -66,8 +67,7 @@ static const char* vShader = "shaders/shader_light.vert";
 // Fragment Shader
 static const char* fShader = "shaders/shader_light.frag";
 
-
-//funci�n de calculo de normales por promedio de v�rtices 
+//función de calculo de normales por promedio de vértices 
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
 	unsigned int vLength, unsigned int normalOffset)
 {
@@ -139,7 +139,7 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
+	camera = Camera(glm::vec3(10.0f, 80.0f, 40.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
 
 	monedaTexture = Texture("Textures/moneda.png");
 	monedaTexture.LoadTextureA();
@@ -223,7 +223,7 @@ int main()
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
 
-		// informaci�n en el shader de intensidad especular y brillo
+		// información en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
 		uniformShininess = shaderList[0].GetShininessLocation();
 
@@ -260,7 +260,6 @@ int main()
 			}
 		}
 
-
 		shaderList[0].SetPointLights(pointLights, pointLightCount);
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
 
@@ -269,35 +268,11 @@ int main()
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 
 		// Gabinete
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0, 0.5f, -28.0f));
-		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Gabinete_M.RenderModel();
-
-		// Moneda
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-3.65f, 8.0f, -1.8f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Moneda_M.RenderModel();
-
-		// Resorte
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(10.0f, 9.5f, -7.5f));
-		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
-		model = glm::rotate(model, -70 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Resorte_M.RenderModel();
-
-		// Canica
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(10.0f, 11.0f, -12.0f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica_M.RenderModel();
 
 		glUseProgram(0);
 		mainWindow.swapBuffers();
