@@ -29,6 +29,10 @@
 #include "SpotLight.h"
 #include "Material.h"
 
+// Variables para el contador de dia y noche
+bool day;
+int counterHour;
+int counterDay;
 
 // Variables y banderas para animacion
 
@@ -284,7 +288,6 @@ int main()
 	GLuint uniformColor = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
-<<<<<<< HEAD
 	// Inicializacion de variables para animacion
 
 	// Offsets
@@ -331,12 +334,11 @@ int main()
 
 	// Sierra
 	rotSierra = 0.0;
-=======
-	//Variables para el contador de dia y noche
-	bool day =  true;
-	int counterHour = 0;
-	int counterDay = 0;
->>>>>>> main
+	
+	// Inicializacion de variables para el contador de dia y noche
+	day =  true;
+	counterHour = 0;
+	counterDay = 0;
 
 	while (!mainWindow.getShouldClose())
 	{
@@ -371,12 +373,16 @@ int main()
 
 		// informaci�n al shader de fuentes de iluminaci�n
 
-		//Para el cambio entre dia y noche
+		// Condiciones para el cambio entre dia y noche
+		// El skybox y la luz direccional cambian cada 20 segundos
 		if ((int)now % 2 == 0)
 		{
 			counterHour++;
 		}
-		else counterHour = 0;
+		else
+		{
+			counterHour = 0;
+		}
 		if (counterHour == 1)
 		{
 			counterDay++;
@@ -408,6 +414,7 @@ int main()
 
 		/* Animaciones */
 
+		// Reinicio forzado de la animacion
 		if (mainWindow.getReset())
 		{
 			// Moneda
@@ -950,9 +957,7 @@ int main()
 		model = glm::rotate(model, rotSierra * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Sierra_M.RenderModel();
-
-=======
->>>>>>> main
+		
 		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}
