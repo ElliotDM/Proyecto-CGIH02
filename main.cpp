@@ -75,6 +75,9 @@ float wm1_arc_izq_z;
 int wm1_cont1;
 int wm1_cont2;
 
+// Sierra
+float rotSierra;
+
 const float toRadians = 3.14159265f / 180.0f;
 
 Window mainWindow;
@@ -313,6 +316,9 @@ int main()
 	wm1_cont1 = 0;
 	wm1_cont2 = 0;
 
+	// Sierra
+	rotSierra = 0.0;
+
 	while (!mainWindow.getShouldClose())
 	{
 		GLfloat now = glfwGetTime();
@@ -358,8 +364,6 @@ int main()
 
 		if (mainWindow.getReset())
 		{
-			animacion = true;
-
 			// Moneda
 			mov_moneda = 33.0f;
 			rot_moneda = 0.0f;
@@ -492,21 +496,20 @@ int main()
 				// Canica choca con obstaculo y rebota
 				else if (choca)
 				{
+					// Activa animacion del objeto jerarquico
 					if (wm1_inicio){}
 					else
 					{
 						wm1_inicio = true;
 					}
+
 					// Sigue una trayectoria de un circulo
 					if (t_curva <= 0.4)
 					{
-						if (movy_canica >= 49.0)
-						{
-							movy_canica -= 0.0001;
-						}
-
 						t_curva += 0.001;
+
 						movx_canica = -10.47 + (glm::sqrt(845.92) * glm::cos(t_curva));
+						movy_canica -= 0.005 * deltaTime * 1.5;
 						movz_canica = -12.05 + (glm::sqrt(845.92) * glm::sin(t_curva));
 					}
 					else
@@ -521,13 +524,9 @@ int main()
 				{
 					if (t_curva >= -3.1)
 					{
-						if (movy_canica >= 48.35)
-						{
-							movy_canica -= 0.001;
-						}
-
 						t_curva -= 0.0005;
 						movx_canica = 73.12 + (glm::sqrt(3503.15) * glm::cos(t_curva));
+						movy_canica -= 0.005 * deltaTime * 1.5;
 						movz_canica = 15.88 + (glm::sqrt(3503.15) * glm::sin(t_curva));
 					}
 					else
@@ -544,11 +543,11 @@ int main()
 					{
 						if (movx_canica >= 11.11)
 						{
-							movy_canica += 0.001;
+							movy_canica += 0.01 * deltaTime * 1.5;
 						}
-						else if (movy_canica >= 48.3)
+						else if (movy_canica >= 48.35)
 						{
-							movy_canica -= 0.001;
+							movy_canica -= 0.02 * deltaTime * 1.5;
 						}
 
 						t_curva -= 0.01;
@@ -559,7 +558,8 @@ int main()
 					{
 						if (movz_canica <= 26.0)
 						{
-							movz_canica += 0.05;
+							movz_canica += canica_offset * deltaTime * 4;
+							movy_canica -= 0.01 * deltaTime * 1.5;
 						}
 						else
 						{
@@ -592,7 +592,6 @@ int main()
 				rot_canica = 0.0f;
 				t_curva = 0.0f;
 				canica_init = false;
-				canica_animacion = false;
 				subida = true;
 				salida = false;
 				choca = false;
@@ -603,28 +602,29 @@ int main()
 		
 		// Animacion del objeto jerarquico
 		if (wm1_inicio) {
-			// 1
+			// Caparazon se separa
 			if (wm1_der < 1.2) {
 				wm1_der += 0.05;
 				wm1_izq -= 0.05;
 			}
-			// 2
+			// Caparazon rota
 			else if (wm1_arc_izq_z < 30)
 			{
 				wm1_arc_der_z += 5;
 				wm1_arc_izq_z += 5;
 			}
-			// 3
+			// Interior rota 
 			else if (wm1_arc < 40)
 			{
 				wm1_arc_izq_z += 1;
 				wm1_arc += 5;
 			}
-			// 4
+			// Caparazon derecho rota
 			else if (wm1_arc_der_z < 40)
 			{
 				wm1_arc_der_z += 5;
 			}
+			// Comienza a vibrar durante 2 segundos
 			else if ((int)now % 2 == 0)
 			{
 				wm1_cont1++;
@@ -658,6 +658,7 @@ int main()
 				}
 			}
 		}
+		// Regresa a su estado inicial
 		else
 		{
 			wm1_izq = -0.5;
@@ -711,7 +712,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Manija_M.RenderModel();
 
-		// Canica 1
+		// Canica
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(movx_canica, movy_canica, movz_canica));
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
@@ -748,7 +749,7 @@ int main()
 
 		/* Obstaculos */
 
-		// Wingmould (Objeto jerarquico) 15.2f, 50.9f, -23.5f
+		// Wingmould (Objeto jerarquico)
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(15.2f, 50.9f, -23.5f));
 		modelaux = model;
@@ -773,7 +774,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WingMould_R.RenderModel();
 
-		// Wingmould (Objeto jerarquico) 16.2f, 50.7f, -18.5f
+		// Wingmould (Objeto jerarquico)
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(16.2f, 50.7f, -18.5f));
 		modelaux = model;
@@ -793,7 +794,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WingMould_R.RenderModel();
 
-		// Wingmould (Objeto jerarquico) 10.7f, 50.8f, -20.2f
+		// Wingmould (Objeto jerarquico)
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(10.7f, 50.8f, -20.4f));
 		modelaux = model;
@@ -887,38 +888,21 @@ int main()
 		Huevo_M.RenderModel();
 
 		// Sierra
+		rotSierra += 36.0;
+
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(7.0f, 49.8f, -9.0f));
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		model = glm::rotate(model, rotSierra * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Sierra_M.RenderModel();
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(15.0f, 49.6f, -5.0f));
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		model = glm::rotate(model, rotSierra * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Sierra_M.RenderModel();
-
-		/*model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(14.0, 48.3, 12.8));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica_M.RenderModel();
-
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(11.0, 49.0, 11.0));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica_M.RenderModel();
-
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(8.0, 49.0, 15.0));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica_M.RenderModel();*/
 
 		glUseProgram(0);
 		mainWindow.swapBuffers();
