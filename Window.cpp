@@ -105,12 +105,14 @@ void Window::ManejaTeclado(GLFWwindow *window, int key, int code, int action, in
 
 	if (key == GLFW_KEY_O)
 	{
-		theWindow->isometrica = false;
+		theWindow->camaraJugador = false;
+		theWindow->camaraAvatar = true;
 	}
 
 	if (key == GLFW_KEY_I)
 	{
-		theWindow->isometrica = true;
+		theWindow->camaraJugador = true;
+		theWindow->camaraAvatar = false;
 	}
 
 	if (key == GLFW_KEY_M)
@@ -184,15 +186,9 @@ void Window::ManejaClick(GLFWwindow* window, int button, int action, int mods)
 			theWindow->rButton = false;
 
 	if (theWindow->rButton)
-	{
 		theWindow->resorte = true;
-		theWindow->animacion = true;
-	}
 	else
-	{
 		theWindow->resorte = false;
-		theWindow->animacion = false;
-	}
 }
 
 Window::~Window()

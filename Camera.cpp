@@ -62,40 +62,34 @@ void Camera::mouseControl(GLfloat xChange, GLfloat yChange)
 	update();
 }
 
-void Camera::keyControlIsometric(bool* keys, GLfloat deltaTime)
+void Camera::keyControlJugador(bool* keys, GLfloat deltaTime)
 {
 	GLfloat velocity = moveSpeed * deltaTime;
 
+	// Acercar camara
 	if (keys[GLFW_KEY_W])
 	{
-		position += front * velocity;
+		if (position.y >= 50.0f)
+		{
+			position += front * velocity;
+		}
+		else
+		{
+		}
 	}
 
+	// Alejar camara
 	if (keys[GLFW_KEY_S])
 	{
-		position -= front * velocity;
+		if (position.y <= 80.0f)
+		{
+			position -= front * velocity;
+		}
+		else
+		{
+		}
 	}
 }
-
-void Camera::mouseControlIsometric(GLfloat xChange)
-{
-	xChange *= turnSpeed;
-
-	yaw += xChange;
-
-	if (pitch > 89.0f)
-	{
-		pitch = 89.0f;
-	}
-
-	if (pitch < -89.0f)
-	{
-		pitch = -89.0f;
-	}
-
-	update();
-}
-
 
 glm::mat4 Camera::calculateViewMatrix()
 {

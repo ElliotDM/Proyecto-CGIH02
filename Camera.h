@@ -15,10 +15,7 @@ public:
 
 	void keyControl(bool* keys, GLfloat deltaTime);
 	void mouseControl(GLfloat xChange, GLfloat yChange);
-
-
-	void keyControlIsometric(bool* keys, GLfloat deltaTime);
-	void mouseControlIsometric(GLfloat xChange);
+	void keyControlJugador(bool* keys, GLfloat deltaTime);
 
 	glm::vec3 getCameraPosition();
 	glm::vec3 getCameraDirection();

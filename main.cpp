@@ -215,7 +215,7 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(8.0f, 70.0f, 70.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -10.0f, 0.3f, 0.5f);
+	camera = Camera(glm::vec3(8.0f, 70.0f, 60.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
 
 	monedaTexture = Texture("Textures/moneda.png");
 	monedaTexture.LoadTextureA();
@@ -358,17 +358,17 @@ int main()
 		// Recibir eventos del usuario
 		glfwPollEvents();
 
-		if (mainWindow.getIsometrica())
+		// Condicionales para el cambio de camara
+		if (mainWindow.getCamaraJugador())
 		{
-			camera.keyControlIsometric(mainWindow.getsKeys(), deltaTime);
-			camera.mouseControlIsometric(mainWindow.getXChange());
+			camera.keyControlJugador(mainWindow.getsKeys(), deltaTime);
 		}
-		else
+
+		if (mainWindow.getCamaraAvatar())
 		{
 			camera.keyControl(mainWindow.getsKeys(), deltaTime);
 			camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 		}
-		
 
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -885,76 +885,22 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WingMould_R.RenderModel();
 
-		// Wingmould (Objeto jerarquico)
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(9.7f, 49.0f, 4.6f));
-		modelaux = model;
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_C.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_L.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_R.RenderModel();
-
-		// Wingmould (Objeto jerarquico)
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(5.2f, 48.9f, 8.2f));
-		modelaux = model;
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_C.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_L.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_R.RenderModel();
-
-		// Wingmould (Objeto jerarquico)
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(4.4f, 49.2f, 2.3f));
-		modelaux = model;
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_C.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_L.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_R.RenderModel();
-
 		// Huevo
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-1.7f, 49.0f, 5.4f));
-		model = glm::scale(model, glm::vec3(0.7f, 0.7f, 0.7f));
+		model = glm::translate(model, glm::vec3(9.7f, 49.1f, 4.4f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Huevo_M.RenderModel();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(20.2f, 48.8f, 6.5f));
-		model = glm::scale(model, glm::vec3(0.7f, 0.7f, 0.7f));
+		model = glm::translate(model, glm::vec3(5.2f, 49.0f, 8.1f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Huevo_M.RenderModel();
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(4.4f, 49.3f, 2.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Huevo_M.RenderModel();
 

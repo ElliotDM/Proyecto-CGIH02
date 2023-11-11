@@ -14,7 +14,8 @@ public:
 	GLfloat getXChange();
 	GLfloat getYChange();
 
-	GLboolean getIsometrica() { return isometrica; }
+	GLboolean getCamaraJugador() { return camaraJugador; }
+	GLboolean getCamaraAvatar() { return camaraAvatar; }
 
 	GLboolean getMoneda() { return moneda; }
 	GLvoid setMoneda(bool m) { moneda = m; }
@@ -23,7 +24,6 @@ public:
 	GLvoid setReset(bool m) { reset = m; }
 
 	GLboolean getResorte() { return resorte; }
-	GLboolean getAnimacion() { return animacion; }
 
 	GLfloat getFlipper1() { return angulo_flipper1; }
 	GLfloat getFlipper2() { return angulo_flipper2; }
@@ -49,12 +49,14 @@ private:
 	GLfloat yChange;
 	bool mouseFirstMoved;
 
+	GLboolean camaraJugador = true;
+	GLboolean camaraAvatar = false;
+
 	GLboolean rButton = false;
+
 	GLboolean moneda = false;
 	GLboolean reset = false;
 	GLboolean resorte = false;
-	GLboolean animacion = false;
-	GLboolean isometrica = true;
 
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
