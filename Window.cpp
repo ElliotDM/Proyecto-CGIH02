@@ -103,6 +103,16 @@ void Window::ManejaTeclado(GLFWwindow *window, int key, int code, int action, in
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 
+	if (key == GLFW_KEY_O)
+	{
+		theWindow->isometrica = false;
+	}
+
+	if (key == GLFW_KEY_I)
+	{
+		theWindow->isometrica = true;
+	}
+
 	if (key == GLFW_KEY_M)
 	{
 		theWindow->moneda = true;

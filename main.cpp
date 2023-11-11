@@ -215,7 +215,7 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(10.0f, 80.0f, 40.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
+	camera = Camera(glm::vec3(8.0f, 70.0f, 70.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -10.0f, 0.3f, 0.5f);
 
 	monedaTexture = Texture("Textures/moneda.png");
 	monedaTexture.LoadTextureA();
@@ -357,8 +357,18 @@ int main()
 
 		// Recibir eventos del usuario
 		glfwPollEvents();
-		camera.keyControl(mainWindow.getsKeys(), deltaTime);
-		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+
+		if (mainWindow.getIsometrica())
+		{
+			camera.keyControlIsometric(mainWindow.getsKeys(), deltaTime);
+			camera.mouseControlIsometric(mainWindow.getXChange());
+		}
+		else
+		{
+			camera.keyControl(mainWindow.getsKeys(), deltaTime);
+			camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+		}
+		
 
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

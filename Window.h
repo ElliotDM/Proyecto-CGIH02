@@ -14,6 +14,8 @@ public:
 	GLfloat getXChange();
 	GLfloat getYChange();
 
+	GLboolean getIsometrica() { return isometrica; }
+
 	GLboolean getMoneda() { return moneda; }
 	GLvoid setMoneda(bool m) { moneda = m; }
 
@@ -45,13 +47,14 @@ private:
 	GLfloat lastY;
 	GLfloat xChange;
 	GLfloat yChange;
-	GLboolean rButton = false;
 	bool mouseFirstMoved;
 
+	GLboolean rButton = false;
 	GLboolean moneda = false;
 	GLboolean reset = false;
 	GLboolean resorte = false;
 	GLboolean animacion = false;
+	GLboolean isometrica = true;
 
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
