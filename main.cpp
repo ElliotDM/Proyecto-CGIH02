@@ -1,3 +1,11 @@
+﻿/*
+Proyecto Final CGIH 02
+
+Duran Macedo Elliot
+Lopez Gamez Luis Antonio
+
+*/
+
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stdio.h>
@@ -734,7 +742,6 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Gabinete_M.RenderModel();
 
-
 		// Moneda
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(13.0f, 39.5f, mov_moneda));
@@ -910,7 +917,7 @@ int main()
 
 		// Wingmould (Objeto jerarquico)
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(4.4f, 48.9f, 2.3f));
+		model = glm::translate(model, glm::vec3(4.4f, 49.2f, 2.3f));
 		modelaux = model;
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
