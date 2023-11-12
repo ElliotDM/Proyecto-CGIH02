@@ -22,12 +22,16 @@
 #include"Model.h"
 #include "Skybox.h"
 
-//para iluminaci�n
+//para iluminacion
 #include "CommonValues.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
 #include "SpotLight.h"
 #include "Material.h"
+
+// Variables para el zoom
+float zoomY;
+float zoomZ;
 
 // Variables para el contador de dia y noche
 bool day;
@@ -89,20 +93,21 @@ std::vector<Shader> shaderList;
 
 Camera camera;
 
-Texture monedaTexture;
 Texture gabineteTexture;
+Texture cristalTexture;
+Texture monedaTexture;
 Texture canicaTexture;
 Texture resorteTexture;
 Texture wingmouldTexture;
 Texture sierraTexture;
 
 Model Gabinete_M;
+Model Cristal_M;
 Model Moneda_M;
 Model Canica_M;
 Model Resorte_M;
 Model Manija_M;
 Model ManijaRes_M;
-Model Cristal_M;
 Model Flipper_M;
 Model WingMould_C;
 Model WingMould_L;
@@ -142,7 +147,7 @@ static const char* vShader = "shaders/shader_light.vert";
 static const char* fShader = "shaders/shader_light.frag";
 
 
-//funci�n de calculo de normales por promedio de v�rtices 
+//funcion de calculo de normales por promedio de vertices 
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
 	unsigned int vLength, unsigned int normalOffset)
 {
@@ -179,7 +184,7 @@ void CreateObjects()
 		2, 3, 0,
 		0, 1, 2
 	};
- 
+
 	GLfloat vertices[] = {
 		//	x      y      z			u	  v			nx	  ny    nz
 			-1.0f, -1.0f, -0.6f,	0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
@@ -214,12 +219,15 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(10.0f, 80.0f, 40.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
+	camera = Camera(glm::vec3(8.0f, 70.0f, 60.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
 
-	monedaTexture = Texture("Textures/moneda.png");
-	monedaTexture.LoadTextureA();
+	// Se cargan las texturas de los elementos del pinball
 	gabineteTexture = Texture("Textures/prueba.png");
 	gabineteTexture.LoadTextureA();
+	cristalTexture = Texture("Textures/Glass.tga");
+	cristalTexture.LoadTextureA();
+	monedaTexture = Texture("Textures/moneda.png");
+	monedaTexture.LoadTextureA();
 	canicaTexture = Texture("Textures/canica.png");
 	canicaTexture.LoadTextureA();
 	resorteTexture = Texture("Textures/resorte.png");
@@ -228,9 +236,12 @@ int main()
 	wingmouldTexture.LoadTextureA();
 	sierraTexture = Texture("Textures/saw.png");
 	sierraTexture.LoadTextureA();
-	
+
+	// Se cargan los modelos de los elementos del pinball
 	Gabinete_M = Model();
 	Gabinete_M.LoadModel("Models/gabinete.obj");
+	Cristal_M = Model();
+	Cristal_M.LoadModel("Models/cristal.obj");
 	Manija_M = Model();
 	Manija_M.LoadModel("Models/manija.obj");
 	ManijaRes_M = Model();
@@ -330,6 +341,10 @@ int main()
 	GLuint uniformColor = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
+	//Inicializacion de variables para zoom
+	zoomY = 80.0;
+	zoomZ = 50.0;
+
 	// Inicializacion de variables para animacion
 
 	// Offsets
@@ -376,9 +391,9 @@ int main()
 
 	// Sierra
 	rotSierra = 0.0;
-	
+
 	// Inicializacion de variables para el contador de dia y noche
-	day =  true;
+	day = true;
 	counterHour = 0;
 	counterDay = 0;
 
@@ -391,8 +406,47 @@ int main()
 
 		// Recibir eventos del usuario
 		glfwPollEvents();
-		camera.keyControl(mainWindow.getsKeys(), deltaTime);
-		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+
+		// Zoom para camara del jugador
+		if (mainWindow.getScroll())
+		{
+			if (zoomY >= 65.0f)
+			{
+				zoomY -= 0.1 * deltaTime;
+				zoomZ -= 0.3 * deltaTime;
+			}
+		}
+		else
+		{
+			if (zoomY <= 85.0f)
+			{
+				zoomY += 0.1 * deltaTime;
+				zoomZ += 0.3 * deltaTime;
+			}
+		}
+
+		// Condicionales para el cambio de camara
+
+		// Camara fija viendo hacia el pinball
+		if (mainWindow.getCamaraJugador())
+		{
+			camera = Camera(glm::vec3(8.0f, zoomY, zoomZ), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
+		}
+
+		// Camara ligada a la canica
+		if (mainWindow.getCamaraAvatar())
+		{
+			// Si se retrocede se le cambia el signo a yaw para apuntar 
+			// la camara hacia la direccion correcta en que se esta mirando
+			if (mainWindow.getRetroceder())
+			{
+				camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() - 0.5), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, -20.0f, 0.3f, 0.5f);
+			}
+			else
+			{
+				camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() + 0.5), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
+			}
+		}
 
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -405,7 +459,7 @@ int main()
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
 
-		// informaci�n en el shader de intensidad especular y brillo
+		// informacion en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
 		uniformShininess = shaderList[0].GetShininessLocation();
 
@@ -413,10 +467,11 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		// informaci�n al shader de fuentes de iluminaci�n
+		// Informacion al shader de fuentes de iluminacion
 
 		// Condiciones para el cambio entre dia y noche
-		// El skybox y la luz direccional cambian cada 20 segundos
+		// el skybox y la luz direccional cambian cada 20 segundos
+
 		//Se carga la primera luz direccional de dia
 		if (firts_Light)
 		{
@@ -425,20 +480,17 @@ int main()
 
 		//Se empieza el conteo para realizar el cambio entre dia y noche
 		if ((int)now % 2 == 0)
-		{
 			counterHour++;
-		}
 		else
-		{
 			counterHour = 0;
-		}
+
 		if (counterHour == 1)
-		{
 			counterDay++;
-		}
+
 		if (counterDay == 10)
 		{
 			counterDay = 0;
+
 			if (day)
 			{
 				shaderList[0].SetDirectionalLight(&mainLightDay);
@@ -481,7 +533,7 @@ int main()
 		}
 		else
 		{
-			shaderList[0].SetSpotLights(spotLights, spotLightCount-1);
+			shaderList[0].SetSpotLights(spotLights, spotLightCount - 1);
 		}
 
 		glm::mat4 model(1.0);
@@ -627,7 +679,7 @@ int main()
 				else if (choca)
 				{
 					// Activa animacion del objeto jerarquico
-					if (wm1_inicio){}
+					if (wm1_inicio) {}
 					else
 					{
 						wm1_inicio = true;
@@ -696,7 +748,7 @@ int main()
 							choca1 = false;
 							canica_animacion = false;
 						}
-						
+
 					}
 				}
 			}
@@ -729,7 +781,7 @@ int main()
 				choca1 = false;
 			}
 		}
-		
+
 		// Animacion del objeto jerarquico
 		if (wm1_inicio) {
 			// Caparazon se separa
@@ -759,15 +811,13 @@ int main()
 			{
 				wm1_cont1++;
 			}
-			else 
-			{ 
-				wm1_cont1 = 0; 
+			else
+			{
+				wm1_cont1 = 0;
 			}
 
 			if (wm1_cont1 == 1)
-			{
 				wm1_cont2++;
-			}
 
 			if (wm1_cont2 == 1)
 			{
@@ -805,14 +855,6 @@ int main()
 		}
 
 		/* Modelos */
-
-		// Gabinete
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
-		modelaux = model;
-		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Gabinete_M.RenderModel();
 
 		//Aguijon
 		model = glm::mat4(1.0);
@@ -901,7 +943,7 @@ int main()
 		model = glm::translate(model, glm::vec3(13.7f, 50.1f, -13.2f));
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, -mainWindow.getFlipper1() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -mainWindow.getFlipper2() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Flipper_M.RenderModel();
 
@@ -972,76 +1014,22 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WingMould_R.RenderModel();
 
-		// Wingmould (Objeto jerarquico)
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(9.7f, 49.0f, 4.6f));
-		modelaux = model;
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_C.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_L.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_R.RenderModel();
-
-		// Wingmould (Objeto jerarquico)
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(5.2f, 48.9f, 8.2f));
-		modelaux = model;
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_C.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_L.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_R.RenderModel();
-
-		// Wingmould (Objeto jerarquico)
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(4.4f, 48.9f, 2.3f));
-		modelaux = model;
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_C.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_L.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_R.RenderModel();
-
 		// Huevo
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-1.7f, 49.0f, 5.4f));
-		model = glm::scale(model, glm::vec3(0.7f, 0.7f, 0.7f));
+		model = glm::translate(model, glm::vec3(9.7f, 49.1f, 4.4f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Huevo_M.RenderModel();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(20.2f, 48.8f, 6.5f));
-		model = glm::scale(model, glm::vec3(0.7f, 0.7f, 0.7f));
+		model = glm::translate(model, glm::vec3(5.2f, 49.0f, 8.1f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Huevo_M.RenderModel();
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(4.4f, 49.3f, 2.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Huevo_M.RenderModel();
 
@@ -1061,7 +1049,45 @@ int main()
 		model = glm::rotate(model, rotSierra * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Sierra_M.RenderModel();
-		
+
+		/* Avatar */
+		if (mainWindow.getCamaraAvatar())
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY(), mainWindow.getAvatarZ()));
+			model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+			model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			Canica_M.RenderModel();
+		}
+
+		/* Gabinete */
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
+		modelaux = model;
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Gabinete_M.RenderModel();
+
+		//blending: transparencia o traslucidez
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+
+		//Cristal
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.0f, 55.0f, 10.0f));
+		model = glm::rotate(model, 180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+
+		//blending: transparencia o traslucidez
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Cristal_M.RenderModel();
+
 		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}
