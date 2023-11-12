@@ -1,4 +1,4 @@
-#define STB_IMAGE_IMPLEMENTATION
+﻿#define STB_IMAGE_IMPLEMENTATION
 
 #include <stdio.h>
 #include <string.h>
@@ -219,21 +219,22 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(8.0f, 70.0f, 60.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
-
 	// Se cargan las texturas de los elementos del pinball
 	gabineteTexture = Texture("Textures/prueba.png");
 	gabineteTexture.LoadTextureA();
 	cristalTexture = Texture("Textures/Glass.tga");
 	cristalTexture.LoadTextureA();
+
 	monedaTexture = Texture("Textures/moneda.png");
 	monedaTexture.LoadTextureA();
 	canicaTexture = Texture("Textures/canica.png");
 	canicaTexture.LoadTextureA();
 	resorteTexture = Texture("Textures/resorte.png");
 	resorteTexture.LoadTextureA();
+
 	wingmouldTexture = Texture("Textures/wingmould.png");
 	wingmouldTexture.LoadTextureA();
+
 	sierraTexture = Texture("Textures/saw.png");
 	sierraTexture.LoadTextureA();
 
@@ -246,6 +247,7 @@ int main()
 	Manija_M.LoadModel("Models/manija.obj");
 	ManijaRes_M = Model();
 	ManijaRes_M.LoadModel("Models/manija_res.obj");
+
 	Moneda_M = Model();
 	Moneda_M.LoadModel("Models/moneda.obj");
 	Canica_M = Model();
@@ -254,12 +256,14 @@ int main()
 	Resorte_M.LoadModel("Models/resorte.obj");
 	Flipper_M = Model();
 	Flipper_M.LoadModel("Models/flipper.obj");
+
 	WingMould_C = Model();
 	WingMould_C.LoadModel("Models/wingmould_C.obj");
 	WingMould_L = Model();
 	WingMould_L.LoadModel("Models/wingmould_L.obj");
 	WingMould_R = Model();
 	WingMould_R.LoadModel("Models/wingmould_R.obj");
+
 	Sierra_M = Model();
 	Sierra_M.LoadModel("Models/sierra.obj");
 	Huevo_M = Model();
@@ -342,8 +346,8 @@ int main()
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
 	//Inicializacion de variables para zoom
-	zoomY = 80.0;
-	zoomZ = 50.0;
+	zoomY = 75.0;
+	zoomZ = 60.0;
 
 	// Inicializacion de variables para animacion
 
@@ -410,18 +414,24 @@ int main()
 		// Zoom para camara del jugador
 		if (mainWindow.getScroll())
 		{
-			if (zoomY >= 65.0f)
+			if (zoomY > 65.0f)
 			{
 				zoomY -= 0.1 * deltaTime;
-				zoomZ -= 0.3 * deltaTime;
+				zoomZ -= 0.2 * deltaTime;
+			}
+			else
+			{
 			}
 		}
 		else
 		{
-			if (zoomY <= 85.0f)
+			if (zoomY < 75.0f)
 			{
 				zoomY += 0.1 * deltaTime;
-				zoomZ += 0.3 * deltaTime;
+				zoomZ += 0.2 * deltaTime;
+			}
+			else
+			{
 			}
 		}
 
@@ -859,7 +869,7 @@ int main()
 		//Aguijon
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(-1.0f, 52.0f, -10.0f));
-		model = glm::rotate(model, -70 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));		
+		model = glm::rotate(model, -70 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Nail_M.RenderModel();
 
