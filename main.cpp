@@ -718,7 +718,7 @@ int main()
 					{
 						t_curva -= 0.0005;
 						movx_canica = 73.12 + (glm::sqrt(3503.15) * glm::cos(t_curva));
-						movy_canica -= 0.005 * deltaTime * 1.5;
+						movy_canica -= 0.005 * deltaTime;
 						movz_canica = 15.88 + (glm::sqrt(3503.15) * glm::sin(t_curva));
 					}
 					else
@@ -735,11 +735,11 @@ int main()
 					{
 						if (movx_canica >= 11.11)
 						{
-							movy_canica += 0.01 * deltaTime * 1.5;
+							movy_canica += 0.005 * deltaTime;
 						}
 						else if (movy_canica >= 48.35)
 						{
-							movy_canica -= 0.02 * deltaTime * 1.5;
+							movy_canica -= 0.005 * deltaTime;
 						}
 
 						t_curva -= 0.01;
@@ -751,7 +751,7 @@ int main()
 						if (movz_canica <= 26.0)
 						{
 							movz_canica += canica_offset * deltaTime * 4;
-							movy_canica -= 0.01 * deltaTime * 1.5;
+							movy_canica -= 0.01 * deltaTime;
 						}
 						else
 						{
