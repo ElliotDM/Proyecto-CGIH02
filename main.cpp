@@ -1,11 +1,3 @@
-﻿/*
-Proyecto Final CGIH 02
-
-Duran Macedo Elliot
-Lopez Gamez Luis Antonio
-
-*/
-
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stdio.h>
@@ -117,6 +109,8 @@ Model WingMould_L;
 Model WingMould_R;
 Model Sierra_M;
 Model Huevo_M;
+Model Nail_M;
+Model Dreamers_M;
 
 Skybox skybox;
 
@@ -259,6 +253,12 @@ int main()
 	Sierra_M.LoadModel("Models/sierra.obj");
 	Huevo_M = Model();
 	Huevo_M.LoadModel("Models/huevo.obj");
+
+	Nail_M = Model();
+	Nail_M.LoadModel("Models/nail.obj");
+	Dreamers_M = Model();
+	Dreamers_M.LoadModel("Models/dreamers.obj");
+
 
 	std::vector<std::string> skyboxFacesDay;
 	skyboxFacesDay.push_back("Textures/Skybox/day_lf.png");
@@ -417,7 +417,6 @@ int main()
 
 		// Condiciones para el cambio entre dia y noche
 		// El skybox y la luz direccional cambian cada 20 segundos
-
 		//Se carga la primera luz direccional de dia
 		if (firts_Light)
 		{
@@ -425,7 +424,6 @@ int main()
 		}
 
 		//Se empieza el conteo para realizar el cambio entre dia y noche
-
 		if ((int)now % 2 == 0)
 		{
 			counterHour++;
@@ -778,10 +776,8 @@ int main()
 			}
 			else
 			{
-
 				//La luz se apagara independientemente del estado
 				shaderList[0].SetPointLights(pointLights1, pointLightCount - 1);
-
 				if (wm1_arc_der_x <= 30.0)
 				{
 					wm1_arc_der_x += 10.0;
@@ -813,9 +809,33 @@ int main()
 		// Gabinete
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
+		modelaux = model;
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Gabinete_M.RenderModel();
+
+		//Aguijon
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-1.0f, 52.0f, -10.0f));
+		model = glm::rotate(model, -70 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));		
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Nail_M.RenderModel();
+
+		//soñadores
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(0.0f, 49.0f, 26.0f));
+		model = glm::rotate(model, 3 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.03f, 0.03f, 0.03f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Dreamers_M.RenderModel();
+
+		//soñadores
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(16.0f, 49.0f, 26.0f));
+		model = glm::rotate(model, 3 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.03f, 0.03f, 0.03f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Dreamers_M.RenderModel();
 
 		// Moneda
 		model = glm::mat4(1.0f);
@@ -855,6 +875,8 @@ int main()
 		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica_M.RenderModel();
+
+
 
 		// Flipper 1
 		model = glm::mat4(1.0);
@@ -992,7 +1014,7 @@ int main()
 
 		// Wingmould (Objeto jerarquico)
 		model = glm::mat4(1.0f);
-  	model = glm::translate(model, glm::vec3(4.4f, 49.2f, 2.3f));
+		model = glm::translate(model, glm::vec3(4.4f, 48.9f, 2.3f));
 		modelaux = model;
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
