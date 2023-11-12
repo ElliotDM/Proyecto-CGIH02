@@ -701,7 +701,7 @@ int main()
 						t_curva += 0.001;
 
 						movx_canica = -10.47 + (glm::sqrt(845.92) * glm::cos(t_curva));
-						movy_canica -= 0.005 * deltaTime * 1.5;
+						movy_canica -= 0.005 * deltaTime;
 						movz_canica = -12.05 + (glm::sqrt(845.92) * glm::sin(t_curva));
 					}
 					else
@@ -927,8 +927,6 @@ int main()
 		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica_M.RenderModel();
-
-
 
 		// Flipper 1
 		model = glm::mat4(1.0);
