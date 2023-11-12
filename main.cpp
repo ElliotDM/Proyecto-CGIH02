@@ -1,4 +1,4 @@
-/*
+﻿/*
 Proyecto Final CGIH 02
 
 Duran Macedo Elliot
@@ -190,7 +190,7 @@ void CreateObjects()
 		2, 3, 0,
 		0, 1, 2
 	};
- 
+
 	GLfloat vertices[] = {
 		//	x      y      z			u	  v			nx	  ny    nz
 			-1.0f, -1.0f, -0.6f,	0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
@@ -227,6 +227,7 @@ int main()
 
 	camera = Camera(glm::vec3(8.0f, 70.0f, 60.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
 
+	// Se cargan las texturas de los elementos del pinball
 	gabineteTexture = Texture("Textures/prueba.png");
 	gabineteTexture.LoadTextureA();
 	cristalTexture = Texture("Textures/Glass.tga");
@@ -241,7 +242,8 @@ int main()
 	wingmouldTexture.LoadTextureA();
 	sierraTexture = Texture("Textures/saw.png");
 	sierraTexture.LoadTextureA();
-	
+
+	// Se cargan los modelos de los elementos del pinball
 	Gabinete_M = Model();
 	Gabinete_M.LoadModel("Models/gabinete.obj");
 	Cristal_M = Model();
@@ -340,9 +342,9 @@ int main()
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
 	//Inicializacion de variables para zoom
-	zoomY = 70.0;
-	zoomZ = 60.0;
-	
+	zoomY = 80.0;
+	zoomZ = 50.0;
+
 	// Inicializacion de variables para animacion
 
 	// Offsets
@@ -389,9 +391,9 @@ int main()
 
 	// Sierra
 	rotSierra = 0.0;
-	
+
 	// Inicializacion de variables para el contador de dia y noche
-	day =  true;
+	day = true;
 	counterHour = 0;
 	counterDay = 0;
 
@@ -406,39 +408,44 @@ int main()
 		glfwPollEvents();
 
 		// Zoom para camara del jugador
-		if (mainWindow.getScroll())	
+		if (mainWindow.getScroll())
 		{
-			if (zoomY >= 50.0f)
+			if (zoomY >= 65.0f)
 			{
 				zoomY -= 0.1 * deltaTime;
-				zoomZ -= 0.1 * deltaTime;
-			}
-			else
-			{
+				zoomZ -= 0.3 * deltaTime;
 			}
 		}
 		else
 		{
-			if (zoomY <= 80.0f) 
+			if (zoomY <= 85.0f)
 			{
 				zoomY += 0.1 * deltaTime;
-				zoomZ += 0.1 * deltaTime;
-			}
-			else
-			{
+				zoomZ += 0.3 * deltaTime;
 			}
 		}
 
 		// Condicionales para el cambio de camara
+
+		// Camara fija viendo hacia el pinball
 		if (mainWindow.getCamaraJugador())
 		{
 			camera = Camera(glm::vec3(8.0f, zoomY, zoomZ), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
 		}
 
+		// Camara ligada a la canica
 		if (mainWindow.getCamaraAvatar())
 		{
-			camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() + 0.5), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
-			camera.mouseControl(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5);
+			// Si se retrocede se le cambia el signo a yaw para apuntar 
+			// la camara hacia la direccion correcta en que se esta mirando
+			if (mainWindow.getRetroceder())
+			{
+				camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() - 0.5), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, -20.0f, 0.3f, 0.5f);
+			}
+			else
+			{
+				camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() + 0.5), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
+			}
 		}
 
 		// Clear the window
@@ -460,10 +467,10 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		// informacion al shader de fuentes de iluminacion
+		// Informacion al shader de fuentes de iluminacion
 
 		// Condiciones para el cambio entre dia y noche
-		// El skybox y la luz direccional cambian cada 20 segundos
+		// el skybox y la luz direccional cambian cada 20 segundos
 
 		//Se carga la primera luz direccional de dia
 		if (firts_Light)
@@ -527,7 +534,7 @@ int main()
 		}
 		else
 		{
-			shaderList[0].SetSpotLights(spotLights, spotLightCount-1);
+			shaderList[0].SetSpotLights(spotLights, spotLightCount - 1);
 		}
 
 		glm::mat4 model(1.0);
@@ -673,7 +680,7 @@ int main()
 				else if (choca)
 				{
 					// Activa animacion del objeto jerarquico
-					if (wm1_inicio){}
+					if (wm1_inicio) {}
 					else
 					{
 						wm1_inicio = true;
@@ -742,7 +749,7 @@ int main()
 							choca1 = false;
 							canica_animacion = false;
 						}
-						
+
 					}
 				}
 			}
@@ -775,7 +782,7 @@ int main()
 				choca1 = false;
 			}
 		}
-		
+
 		// Animacion del objeto jerarquico
 		if (wm1_inicio) {
 			// Caparazon se separa
@@ -805,9 +812,9 @@ int main()
 			{
 				wm1_cont1++;
 			}
-			else 
-			{ 
-				wm1_cont1 = 0; 
+			else
+			{
+				wm1_cont1 = 0;
 			}
 
 			if (wm1_cont1 == 1)
@@ -1040,7 +1047,6 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Gabinete_M.RenderModel();
 
-		// Cristal
 		//blending: transparencia o traslucidez
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1048,17 +1054,18 @@ int main()
 
 		//Cristal
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.0f, 5.45f, -1.2f));
+		model = glm::translate(model, glm::vec3(0.0f, 55.0f, 10.0f));
+		model = glm::rotate(model, 180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
-		
+
 		//blending: transparencia o traslucidez
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		
+
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Cristal_M.RenderModel();
-		
+
 		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}
