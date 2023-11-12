@@ -1,4 +1,3 @@
-
 #include "Window.h"
 
 Window::Window()
@@ -99,7 +98,6 @@ void Window::ManejaTeclado(GLFWwindow *window, int key, int code, int action, in
 {
 	Window *theWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
 
-
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE);
@@ -161,6 +159,7 @@ void Window::ManejaTeclado(GLFWwindow *window, int key, int code, int action, in
 	{
 		theWindow->hierarchicalObject = false;
 	}
+
 	if (key >= 0 && key < 1024)
 	{
 		if (action == GLFW_PRESS)
@@ -174,8 +173,6 @@ void Window::ManejaTeclado(GLFWwindow *window, int key, int code, int action, in
 			// printf("se solto la tecla %d'\n", key);
 		}
 	}
-
-
 }
 
 void Window::ManejaMouse(GLFWwindow *window, double xPos, double yPos)

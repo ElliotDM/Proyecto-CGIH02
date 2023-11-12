@@ -1,3 +1,11 @@
+﻿/*
+Proyecto Final CGIH 02
+
+Duran Macedo Elliot
+Lopez Gamez Luis Antonio
+
+*/
+
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stdio.h>
@@ -409,6 +417,7 @@ int main()
 
 		// Condiciones para el cambio entre dia y noche
 		// El skybox y la luz direccional cambian cada 20 segundos
+
 		//Se carga la primera luz direccional de dia
 		if (firts_Light)
 		{
@@ -416,6 +425,7 @@ int main()
 		}
 
 		//Se empieza el conteo para realizar el cambio entre dia y noche
+
 		if ((int)now % 2 == 0)
 		{
 			counterHour++;
@@ -768,8 +778,10 @@ int main()
 			}
 			else
 			{
+
 				//La luz se apagara independientemente del estado
 				shaderList[0].SetPointLights(pointLights1, pointLightCount - 1);
+
 				if (wm1_arc_der_x <= 30.0)
 				{
 					wm1_arc_der_x += 10.0;
@@ -804,7 +816,6 @@ int main()
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Gabinete_M.RenderModel();
-
 
 		// Moneda
 		model = glm::mat4(1.0f);
@@ -981,7 +992,7 @@ int main()
 
 		// Wingmould (Objeto jerarquico)
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(4.4f, 48.9f, 2.3f));
+  	model = glm::translate(model, glm::vec3(4.4f, 49.2f, 2.3f));
 		modelaux = model;
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
