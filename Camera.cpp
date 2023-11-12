@@ -62,35 +62,6 @@ void Camera::mouseControl(GLfloat xChange, GLfloat yChange)
 	update();
 }
 
-void Camera::keyControlJugador(bool* keys, GLfloat deltaTime)
-{
-	GLfloat velocity = moveSpeed * deltaTime;
-
-	// Acercar camara
-	if (keys[GLFW_KEY_W])
-	{
-		if (position.y >= 50.0f)
-		{
-			position += front * velocity;
-		}
-		else
-		{
-		}
-	}
-
-	// Alejar camara
-	if (keys[GLFW_KEY_S])
-	{
-		if (position.y <= 80.0f)
-		{
-			position -= front * velocity;
-		}
-		else
-		{
-		}
-	}
-}
-
 glm::mat4 Camera::calculateViewMatrix()
 {
 	return glm::lookAt(position, position + front, up);

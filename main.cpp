@@ -30,12 +30,16 @@ Lopez Gamez Luis Antonio
 #include"Model.h"
 #include "Skybox.h"
 
-//para iluminaci�n
+//para iluminacion
 #include "CommonValues.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
 #include "SpotLight.h"
 #include "Material.h"
+
+// Variables para el zoom
+float zoomY;
+float zoomZ;
 
 // Variables para el contador de dia y noche
 bool day;
@@ -97,20 +101,21 @@ std::vector<Shader> shaderList;
 
 Camera camera;
 
-Texture monedaTexture;
 Texture gabineteTexture;
+Texture cristalTexture;
+Texture monedaTexture;
 Texture canicaTexture;
 Texture resorteTexture;
 Texture wingmouldTexture;
 Texture sierraTexture;
 
 Model Gabinete_M;
+Model Cristal_M;
 Model Moneda_M;
 Model Canica_M;
 Model Resorte_M;
 Model Manija_M;
 Model ManijaRes_M;
-Model Cristal_M;
 Model Flipper_M;
 Model WingMould_C;
 Model WingMould_L;
@@ -143,7 +148,7 @@ static const char* vShader = "shaders/shader_light.vert";
 static const char* fShader = "shaders/shader_light.frag";
 
 
-//funci�n de calculo de normales por promedio de v�rtices 
+//funcion de calculo de normales por promedio de vertices 
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
 	unsigned int vLength, unsigned int normalOffset)
 {
@@ -217,10 +222,12 @@ int main()
 
 	camera = Camera(glm::vec3(8.0f, 70.0f, 60.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
 
-	monedaTexture = Texture("Textures/moneda.png");
-	monedaTexture.LoadTextureA();
 	gabineteTexture = Texture("Textures/prueba.png");
 	gabineteTexture.LoadTextureA();
+	cristalTexture = Texture("Textures/Glass.tga");
+	cristalTexture.LoadTextureA();
+	monedaTexture = Texture("Textures/moneda.png");
+	monedaTexture.LoadTextureA();
 	canicaTexture = Texture("Textures/canica.png");
 	canicaTexture.LoadTextureA();
 	resorteTexture = Texture("Textures/resorte.png");
@@ -232,6 +239,8 @@ int main()
 	
 	Gabinete_M = Model();
 	Gabinete_M.LoadModel("Models/gabinete.obj");
+	Cristal_M = Model();
+	Cristal_M.LoadModel("Models/cristal.obj");
 	Manija_M = Model();
 	Manija_M.LoadModel("Models/manija.obj");
 	ManijaRes_M = Model();
@@ -296,6 +305,10 @@ int main()
 	GLuint uniformColor = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
+	//Inicializacion de variables para zoom
+	zoomY = 70.0;
+	zoomZ = 60.0;
+	
 	// Inicializacion de variables para animacion
 
 	// Offsets
@@ -358,16 +371,40 @@ int main()
 		// Recibir eventos del usuario
 		glfwPollEvents();
 
+		// Zoom para camara del jugador
+		if (mainWindow.getScroll())	
+		{
+			if (zoomY >= 50.0f)
+			{
+				zoomY -= 0.1 * deltaTime;
+				zoomZ -= 0.1 * deltaTime;
+			}
+			else
+			{
+			}
+		}
+		else
+		{
+			if (zoomY <= 80.0f) 
+			{
+				zoomY += 0.1 * deltaTime;
+				zoomZ += 0.1 * deltaTime;
+			}
+			else
+			{
+			}
+		}
+
 		// Condicionales para el cambio de camara
 		if (mainWindow.getCamaraJugador())
 		{
-			camera.keyControlJugador(mainWindow.getsKeys(), deltaTime);
+			camera = Camera(glm::vec3(8.0f, zoomY, zoomZ), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
 		}
 
 		if (mainWindow.getCamaraAvatar())
 		{
-			camera.keyControl(mainWindow.getsKeys(), deltaTime);
-			camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+			camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() + 0.5), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
+			camera.mouseControl(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5);
 		}
 
 		// Clear the window
@@ -381,7 +418,7 @@ int main()
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
 
-		// informaci�n en el shader de intensidad especular y brillo
+		// informacion en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
 		uniformShininess = shaderList[0].GetShininessLocation();
 
@@ -389,25 +426,22 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		// informaci�n al shader de fuentes de iluminaci�n
+		// informacion al shader de fuentes de iluminacion
 
 		// Condiciones para el cambio entre dia y noche
 		// El skybox y la luz direccional cambian cada 20 segundos
 		if ((int)now % 2 == 0)
-		{
 			counterHour++;
-		}
 		else
-		{
 			counterHour = 0;
-		}
+
 		if (counterHour == 1)
-		{
 			counterDay++;
-		}
+
 		if (counterDay == 10)
 		{
 			counterDay = 0;
+
 			if (day)
 			{
 				shaderList[0].SetDirectionalLight(&mainLightDay);
@@ -706,9 +740,7 @@ int main()
 			}
 
 			if (wm1_cont1 == 1)
-			{
 				wm1_cont2++;
-			}
 
 			if (wm1_cont2 == 1)
 			{
@@ -744,13 +776,6 @@ int main()
 		}
 
 		/* Modelos */
-
-		// Gabinete
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
-		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Gabinete_M.RenderModel();
 
 		// Moneda
 		model = glm::mat4(1.0f);
@@ -814,7 +839,7 @@ int main()
 		model = glm::translate(model, glm::vec3(13.7f, 50.1f, -13.2f));
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, -mainWindow.getFlipper1() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -mainWindow.getFlipper2() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Flipper_M.RenderModel();
 
@@ -920,6 +945,44 @@ int main()
 		model = glm::rotate(model, rotSierra * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Sierra_M.RenderModel();
+
+		/* Avatar */
+		if (mainWindow.getCamaraAvatar())
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY(), mainWindow.getAvatarZ()));
+			model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+			model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+			Canica_M.RenderModel();
+		}
+
+		/* Gabinete */
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
+		modelaux = model;
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Gabinete_M.RenderModel();
+
+		// Cristal
+		//blending: transparencia o traslucidez
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+
+		//Cristal
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.0f, 5.45f, -1.2f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		
+		//blending: transparencia o traslucidez
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Cristal_M.RenderModel();
 		
 		glUseProgram(0);
 		mainWindow.swapBuffers();

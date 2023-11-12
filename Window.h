@@ -17,6 +17,8 @@ public:
 	GLboolean getCamaraJugador() { return camaraJugador; }
 	GLboolean getCamaraAvatar() { return camaraAvatar; }
 
+	GLboolean getScroll() { return scroll; }
+
 	GLboolean getMoneda() { return moneda; }
 	GLvoid setMoneda(bool m) { moneda = m; }
 
@@ -27,6 +29,10 @@ public:
 
 	GLfloat getFlipper1() { return angulo_flipper1; }
 	GLfloat getFlipper2() { return angulo_flipper2; }
+
+	GLfloat getAvatarX() { return avatarX; }
+	GLfloat getAvatarY() { return avatarY; }
+	GLfloat getAvatarZ() { return avatarZ; }
 
 	bool getShouldClose()
 	{
@@ -52,7 +58,8 @@ private:
 	GLboolean camaraJugador = true;
 	GLboolean camaraAvatar = false;
 
-	GLboolean rButton = false;
+	GLboolean rightButton = false;
+	GLboolean scroll = false;
 
 	GLboolean moneda = false;
 	GLboolean reset = false;
@@ -60,8 +67,13 @@ private:
 
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
+	
+	GLfloat avatarX = 22.75;
+	GLfloat avatarY = 48;
+	GLfloat avatarZ = 24;
 
 	static void ManejaTeclado(GLFWwindow *window, int key, int code, int action, int mode);
 	static void ManejaMouse(GLFWwindow *window, double xPos, double yPos);
 	static void ManejaClick(GLFWwindow* window, int button, int action, int mods);
+	static void ManejaScroll(GLFWwindow* window, double xoffset, double yoffset);
 };

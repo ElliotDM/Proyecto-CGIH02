@@ -79,6 +79,7 @@ void Window::createCallbacks()
 	glfwSetKeyCallback(mainWindow, ManejaTeclado);
 	glfwSetCursorPosCallback(mainWindow, ManejaMouse);
 	glfwSetMouseButtonCallback(mainWindow, ManejaClick);
+	glfwSetScrollCallback(mainWindow, ManejaScroll);
 }
 GLfloat Window::getXChange()
 {
@@ -103,28 +104,86 @@ void Window::ManejaTeclado(GLFWwindow *window, int key, int code, int action, in
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 
+	/* Camaras */
+
+	// Camara ligada al avatar
 	if (key == GLFW_KEY_O)
 	{
 		theWindow->camaraJugador = false;
 		theWindow->camaraAvatar = true;
 	}
 
+	// Camara fija a la maquina de pinball
 	if (key == GLFW_KEY_I)
 	{
 		theWindow->camaraJugador = true;
 		theWindow->camaraAvatar = false;
 	}
 
+	// Teclas asignadas para el control de la
+	// camara ligada al avatar
+	if (key == GLFW_KEY_W)
+	{
+		if (theWindow->avatarY >= 50.6)
+		{
+		}
+		else
+		{
+			theWindow->avatarY += 0.1;
+			theWindow->avatarZ = -theWindow->avatarY / 0.053 + 49.267 / 0.053;
+		}
+	}
+
+	if (key == GLFW_KEY_A)
+	{
+		if (theWindow->avatarX <= -7.0)
+		{
+		}
+		else
+		{
+			theWindow->avatarX -= 0.5;
+		}
+	}
+
+	if (key == GLFW_KEY_S)
+	{
+		if (theWindow->avatarY <= 48)
+		{
+		}
+		else
+		{
+			theWindow->avatarY -= 0.1;
+			theWindow->avatarZ = -theWindow->avatarY / 0.053 + 49.267 / 0.053;
+		}
+
+	}
+
+	if (key == GLFW_KEY_D)
+	{
+		if (theWindow->avatarX >= 23.0)
+		{
+		}
+		else
+		{
+			theWindow->avatarX += 0.5;
+		}
+	}
+
+	/* Control de animaciones */
+
+	// Insertar moneda
 	if (key == GLFW_KEY_M)
 	{
 		theWindow->moneda = true;
 	}
 
+	// Resetea la animacion
 	if (key == GLFW_KEY_R)
 	{
 		theWindow->reset = true;
 	}
 
+	/* Flippers */
 	if (key == GLFW_KEY_Z and action == GLFW_PRESS)
 	{
 		theWindow->angulo_flipper1 = 60.0;
@@ -181,14 +240,24 @@ void Window::ManejaClick(GLFWwindow* window, int button, int action, int mods)
 	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-			theWindow->rButton = true;
+			theWindow->rightButton = true;
 	else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
-			theWindow->rButton = false;
+			theWindow->rightButton = false;
 
-	if (theWindow->rButton)
+	if (theWindow->rightButton)
 		theWindow->resorte = true;
 	else
 		theWindow->resorte = false;
+}
+
+void Window::ManejaScroll(GLFWwindow* window, double xoffset, double yoffset)
+{
+	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	if (yoffset > 0)
+		theWindow->scroll = true;
+	else
+		theWindow->scroll = false;
 }
 
 Window::~Window()
