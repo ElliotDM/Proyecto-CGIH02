@@ -30,9 +30,16 @@ public:
 	GLfloat getFlipper1() { return angulo_flipper1; }
 	GLfloat getFlipper2() { return angulo_flipper2; }
 
+  // Funciones para el avatar
 	GLfloat getAvatarX() { return avatarX; }
 	GLfloat getAvatarY() { return avatarY; }
 	GLfloat getAvatarZ() { return avatarZ; }
+
+	// Funciones para las luces
+	GLboolean getLampara() { return lampara; }
+	GLboolean getlightFlippers() { return lightFlippers; }
+	GLboolean gethierarchicalObject() { return hierarchicalObject; }
+
 
 	bool getShouldClose()
 	{
@@ -64,6 +71,11 @@ private:
 	GLboolean moneda = false;
 	GLboolean reset = false;
 	GLboolean resorte = false;
+
+	//Banderas para las luces
+	GLboolean lampara = true;
+	GLboolean lightFlippers = true;
+	GLboolean hierarchicalObject =  true;
 
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
