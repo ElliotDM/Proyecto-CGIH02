@@ -131,8 +131,13 @@ static double limitFPS = 1.0 / 60.0;
 // luz direccional
 DirectionalLight mainLightDay;
 DirectionalLight mainLightNight;
+
+bool firts_Light = true;
+
 // luces de tipo pointlight
 PointLight pointLights[MAX_POINT_LIGHTS];
+PointLight pointLights1[MAX_POINT_LIGHTS];
+
 // luces de tipo spotlight
 SpotLight spotLights[MAX_SPOT_LIGHTS];
 
@@ -180,7 +185,7 @@ void CreateObjects()
 		2, 3, 0,
 		0, 1, 2
 	};
-
+ 
 	GLfloat vertices[] = {
 		//	x      y      z			u	  v			nx	  ny    nz
 			-1.0f, -1.0f, -0.6f,	0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
@@ -285,11 +290,40 @@ int main()
 		0.2f, 0.2f,
 		0.0f, 0.0f, -1.0f);
 
+	//Se carga la primera luz direccional
+	shaderList[0].SetDirectionalLight(&mainLightDay);
+
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
 
+	//Pointlight del objeto jeraquico
+	pointLights[0] = PointLight(1.0f, 1.0f, 1.0f,
+		0.0f, 1.0f,
+		15.5f, 50.9f, -23.5,
+		1.0f, 0.2f, 0.1f);
+	pointLightCount++;
+
+	// PointLight de los flippers
+	pointLights[1] = PointLight(1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f,
+		8.0f, 48.0f, 21.0f,
+		1.0f, 0.02f, 0.01f);
+	pointLightCount++;
+
+	pointLights1[0] = pointLights[1];
+	pointLights1[1] = pointLights[0];
+
 	//contador de luces spotlight
 	unsigned int spotLightCount = 0;
+
+	//SpotLight del Pinball
+	spotLights[0] = SpotLight(1.0f, 1.0f, 1.0f,
+		0.0f, 2.0f,
+		10.0f, 200.0f, -10.0f,
+		0.0f, -1.0f, 0.0f,
+		0.5f, 0.01f, 0.0f,
+		15.0f);
+	spotLightCount++;
 
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
 		uniformSpecularIntensity = 0, uniformShininess = 0;
@@ -383,6 +417,15 @@ int main()
 
 		// Condiciones para el cambio entre dia y noche
 		// El skybox y la luz direccional cambian cada 20 segundos
+
+		//Se carga la primera luz direccional de dia
+		if (firts_Light)
+		{
+			shaderList[0].SetDirectionalLight(&mainLightDay);
+		}
+
+		//Se empieza el conteo para realizar el cambio entre dia y noche
+
 		if ((int)now % 2 == 0)
 		{
 			counterHour++;
@@ -403,6 +446,7 @@ int main()
 				shaderList[0].SetDirectionalLight(&mainLightDay);
 				skybox = Skybox(skyboxFacesDay);
 				day = false;
+				firts_Light = false;
 			}
 			else
 			{
@@ -412,8 +456,35 @@ int main()
 			}
 		}
 
-		shaderList[0].SetPointLights(pointLights, pointLightCount);
-		shaderList[0].SetSpotLights(spotLights, spotLightCount);
+		//Para prender y apagar las pointLights
+		//shaderList[0].SetPointLights(pointLights, pointLightCount);
+
+		if (mainWindow.getlightFlippers() == false and mainWindow.gethierarchicalObject() == false)
+		{
+			shaderList[0].SetPointLights(pointLights, pointLightCount - 2);
+		}
+		else if (mainWindow.getlightFlippers() == false and mainWindow.gethierarchicalObject() == true)
+		{
+			shaderList[0].SetPointLights(pointLights1, pointLightCount - 1);
+		}
+		else if (mainWindow.getlightFlippers() == true and mainWindow.gethierarchicalObject() == false)
+		{
+			shaderList[0].SetPointLights(pointLights, pointLightCount - 1);
+		}
+		else if (mainWindow.getlightFlippers() == true and mainWindow.gethierarchicalObject() == true)
+		{
+			shaderList[0].SetPointLights(pointLights, pointLightCount);
+		}
+
+		//Solo hay una spotligh, la cual ilumina al pinball
+		if (mainWindow.getLampara())
+		{
+			shaderList[0].SetSpotLights(spotLights, spotLightCount);
+		}
+		else
+		{
+			shaderList[0].SetSpotLights(spotLights, spotLightCount-1);
+		}
 
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
@@ -707,6 +778,10 @@ int main()
 			}
 			else
 			{
+
+				//La luz se apagara independientemente del estado
+				shaderList[0].SetPointLights(pointLights1, pointLightCount - 1);
+
 				if (wm1_arc_der_x <= 30.0)
 				{
 					wm1_arc_der_x += 10.0;
@@ -917,7 +992,7 @@ int main()
 
 		// Wingmould (Objeto jerarquico)
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(4.4f, 49.2f, 2.3f));
+  	model = glm::translate(model, glm::vec3(4.4f, 49.2f, 2.3f));
 		modelaux = model;
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));

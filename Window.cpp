@@ -131,6 +131,35 @@ void Window::ManejaTeclado(GLFWwindow *window, int key, int code, int action, in
 		theWindow->angulo_flipper2 = 0.0;
 	}
 
+	//Encender y apagar lampara principal
+	if (key == GLFW_KEY_B)
+	{
+		theWindow->lampara = true;
+	}
+	else if(key == GLFW_KEY_N)
+	{
+		theWindow->lampara = false;
+	}
+	//Encender y apagar luz de los flippers
+	if (key == GLFW_KEY_T)
+	{
+		theWindow->lightFlippers = true;
+	}
+	else if(key == GLFW_KEY_Y)
+	{
+		theWindow->lightFlippers = false;
+	}
+
+	//Encender y apagar luz del objeto jerarquico
+	if (key == GLFW_KEY_G)
+	{
+		theWindow->hierarchicalObject = true;
+	}
+	else if(key == GLFW_KEY_H)
+	{
+		theWindow->hierarchicalObject = false;
+	}
+
 	if (key >= 0 && key < 1024)
 	{
 		if (action == GLFW_PRESS)
