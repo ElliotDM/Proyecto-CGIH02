@@ -14,23 +14,29 @@ public:
 	GLfloat getXChange();
 	GLfloat getYChange();
 
-	GLboolean getCamaraJugador() { return camaraJugador; }
+	// Funciones para el cambio de camara
+	GLboolean getCamaraIsometrica() { return camaraIsometrica; }
 	GLboolean getCamaraAvatar() { return camaraAvatar; }
+	GLboolean getCamaraTopDown() { return camaraTopDown; }
 
+	// Funciones para el control del mouse
 	GLboolean getScroll() { return scroll; }
+	GLboolean getRetroceder() { return retroceder; }
+
+	// Funciones para las animaciones
+	GLboolean getReset() { return reset; }
+	GLvoid setReset(bool m) { reset = m; }
 
 	GLboolean getMoneda() { return moneda; }
 	GLvoid setMoneda(bool m) { moneda = m; }
 
-	GLboolean getReset() { return reset; }
-	GLvoid setReset(bool m) { reset = m; }
-
 	GLboolean getResorte() { return resorte; }
 
+	// Funciones para los flippers
 	GLfloat getFlipper1() { return angulo_flipper1; }
 	GLfloat getFlipper2() { return angulo_flipper2; }
 
-  // Funciones para el avatar
+	// Funciones para el avatar
 	GLfloat getAvatarX() { return avatarX; }
 	GLfloat getAvatarY() { return avatarY; }
 	GLfloat getAvatarZ() { return avatarZ; }
@@ -45,13 +51,13 @@ public:
 	{
 		return glfwWindowShouldClose(mainWindow);
 	}
-	bool *getsKeys() { return keys; }
+	bool* getsKeys() { return keys; }
 	void swapBuffers() { return glfwSwapBuffers(mainWindow); }
 
 	~Window();
 
 private:
-	GLFWwindow *mainWindow;
+	GLFWwindow* mainWindow;
 	GLint width, height;
 	bool keys[1024];
 	GLint bufferWidth, bufferHeight;
@@ -62,30 +68,37 @@ private:
 	GLfloat yChange;
 	bool mouseFirstMoved;
 
-	GLboolean camaraJugador = true;
+	// Banderas para las camaras
+	GLboolean camaraIsometrica = true;
 	GLboolean camaraAvatar = false;
+	GLboolean camaraTopDown = false;
 
+	// Banderas de control del mouse
 	GLboolean rightButton = false;
 	GLboolean scroll = false;
 
+	// Banderas de control para la animacion
 	GLboolean moneda = false;
 	GLboolean reset = false;
 	GLboolean resorte = false;
 
-	//Banderas para las luces
+	// Banderas para las luces
 	GLboolean lampara = true;
 	GLboolean lightFlippers = true;
-	GLboolean hierarchicalObject =  true;
+	GLboolean hierarchicalObject = true;
 
+	// Banderas de control para los flippers
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
-	
+
+	// Banderas para el avatar
 	GLfloat avatarX = 22.75;
 	GLfloat avatarY = 48;
 	GLfloat avatarZ = 24;
+	GLboolean retroceder = false;
 
-	static void ManejaTeclado(GLFWwindow *window, int key, int code, int action, int mode);
-	static void ManejaMouse(GLFWwindow *window, double xPos, double yPos);
+	static void ManejaTeclado(GLFWwindow* window, int key, int code, int action, int mode);
+	static void ManejaMouse(GLFWwindow* window, double xPos, double yPos);
 	static void ManejaClick(GLFWwindow* window, int button, int action, int mods);
 	static void ManejaScroll(GLFWwindow* window, double xoffset, double yoffset);
 };

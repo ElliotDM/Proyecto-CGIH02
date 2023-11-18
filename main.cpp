@@ -1,12 +1,4 @@
-/*
-Proyecto Final CGIH 02
-
-Duran Macedo Elliot
-Lopez Gamez Luis Antonio
-
-*/
-
-#define STB_IMAGE_IMPLEMENTATION
+﻿#define STB_IMAGE_IMPLEMENTATION
 
 #include <stdio.h>
 #include <string.h>
@@ -27,7 +19,7 @@ Lopez Gamez Luis Antonio
 #include "Camera.h"
 #include "Texture.h"
 #include "Sphere.h"
-#include"Model.h"
+#include "Model.h"
 #include "Skybox.h"
 
 //para iluminacion
@@ -122,6 +114,8 @@ Model WingMould_L;
 Model WingMould_R;
 Model Sierra_M;
 Model Huevo_M;
+Model Nail_M;
+Model Dreamers_M;
 
 Skybox skybox;
 
@@ -190,7 +184,7 @@ void CreateObjects()
 		2, 3, 0,
 		0, 1, 2
 	};
- 
+
 	GLfloat vertices[] = {
 		//	x      y      z			u	  v			nx	  ny    nz
 			-1.0f, -1.0f, -0.6f,	0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
@@ -225,23 +219,26 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(8.0f, 70.0f, 60.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
-
+	// Se cargan las texturas de los elementos del pinball
 	gabineteTexture = Texture("Textures/prueba.png");
 	gabineteTexture.LoadTextureA();
 	cristalTexture = Texture("Textures/Glass.tga");
 	cristalTexture.LoadTextureA();
+
 	monedaTexture = Texture("Textures/moneda.png");
 	monedaTexture.LoadTextureA();
 	canicaTexture = Texture("Textures/canica.png");
 	canicaTexture.LoadTextureA();
 	resorteTexture = Texture("Textures/resorte.png");
 	resorteTexture.LoadTextureA();
+
 	wingmouldTexture = Texture("Textures/wingmould.png");
 	wingmouldTexture.LoadTextureA();
+
 	sierraTexture = Texture("Textures/saw.png");
 	sierraTexture.LoadTextureA();
-	
+
+	// Se cargan los modelos de los elementos del pinball
 	Gabinete_M = Model();
 	Gabinete_M.LoadModel("Models/gabinete.obj");
 	Cristal_M = Model();
@@ -250,6 +247,7 @@ int main()
 	Manija_M.LoadModel("Models/manija.obj");
 	ManijaRes_M = Model();
 	ManijaRes_M.LoadModel("Models/manija_res.obj");
+
 	Moneda_M = Model();
 	Moneda_M.LoadModel("Models/moneda.obj");
 	Canica_M = Model();
@@ -258,16 +256,24 @@ int main()
 	Resorte_M.LoadModel("Models/resorte.obj");
 	Flipper_M = Model();
 	Flipper_M.LoadModel("Models/flipper.obj");
+
 	WingMould_C = Model();
 	WingMould_C.LoadModel("Models/wingmould_C.obj");
 	WingMould_L = Model();
 	WingMould_L.LoadModel("Models/wingmould_L.obj");
 	WingMould_R = Model();
 	WingMould_R.LoadModel("Models/wingmould_R.obj");
+
 	Sierra_M = Model();
 	Sierra_M.LoadModel("Models/sierra.obj");
 	Huevo_M = Model();
 	Huevo_M.LoadModel("Models/huevo.obj");
+
+	Nail_M = Model();
+	Nail_M.LoadModel("Models/nail.obj");
+	Dreamers_M = Model();
+	Dreamers_M.LoadModel("Models/dreamers.obj");
+
 
 	std::vector<std::string> skyboxFacesDay;
 	skyboxFacesDay.push_back("Textures/Skybox/day_lf.png");
@@ -340,9 +346,9 @@ int main()
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
 	//Inicializacion de variables para zoom
-	zoomY = 70.0;
+	zoomY = 75.0;
 	zoomZ = 60.0;
-	
+
 	// Inicializacion de variables para animacion
 
 	// Offsets
@@ -389,9 +395,9 @@ int main()
 
 	// Sierra
 	rotSierra = 0.0;
-	
+
 	// Inicializacion de variables para el contador de dia y noche
-	day =  true;
+	day = true;
 	counterHour = 0;
 	counterDay = 0;
 
@@ -406,12 +412,12 @@ int main()
 		glfwPollEvents();
 
 		// Zoom para camara del jugador
-		if (mainWindow.getScroll())	
+		if (mainWindow.getScroll())
 		{
-			if (zoomY >= 50.0f)
+			if (zoomY > 65.0f)
 			{
 				zoomY -= 0.1 * deltaTime;
-				zoomZ -= 0.1 * deltaTime;
+				zoomZ -= 0.2 * deltaTime;
 			}
 			else
 			{
@@ -419,10 +425,10 @@ int main()
 		}
 		else
 		{
-			if (zoomY <= 80.0f) 
+			if (zoomY < 75.0f)
 			{
 				zoomY += 0.1 * deltaTime;
-				zoomZ += 0.1 * deltaTime;
+				zoomZ += 0.2 * deltaTime;
 			}
 			else
 			{
@@ -430,15 +436,32 @@ int main()
 		}
 
 		// Condicionales para el cambio de camara
-		if (mainWindow.getCamaraJugador())
+
+		// Camara isomatrica
+		if (mainWindow.getCamaraIsometrica())
 		{
 			camera = Camera(glm::vec3(8.0f, zoomY, zoomZ), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
 		}
 
+		// Camara ligada al avatar
 		if (mainWindow.getCamaraAvatar())
 		{
-			camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() + 0.5), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
-			camera.mouseControl(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5);
+			// Si se retrocede se le cambia el signo a yaw para apuntar 
+			// la camara hacia la direccion correcta en que se esta mirando
+			if (mainWindow.getRetroceder())
+			{
+				camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() - 0.5), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, -20.0f, 0.3f, 0.5f);
+			}
+			else
+			{
+				camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() + 0.5), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
+			}
+		}
+
+		// Camara Top Down
+		if (mainWindow.getCamaraTopDown())
+		{
+			camera = Camera(glm::vec3(8.0f, 110.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, -90.0f, 0.3f, 0.5f);
 		}
 
 		// Clear the window
@@ -460,10 +483,10 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		// informacion al shader de fuentes de iluminacion
+		// Informacion al shader de fuentes de iluminacion
 
 		// Condiciones para el cambio entre dia y noche
-		// El skybox y la luz direccional cambian cada 20 segundos
+		// el skybox y la luz direccional cambian cada 20 segundos
 
 		//Se carga la primera luz direccional de dia
 		if (firts_Light)
@@ -472,7 +495,6 @@ int main()
 		}
 
 		//Se empieza el conteo para realizar el cambio entre dia y noche
-
 		if ((int)now % 2 == 0)
 			counterHour++;
 		else
@@ -527,7 +549,7 @@ int main()
 		}
 		else
 		{
-			shaderList[0].SetSpotLights(spotLights, spotLightCount-1);
+			shaderList[0].SetSpotLights(spotLights, spotLightCount - 1);
 		}
 
 		glm::mat4 model(1.0);
@@ -673,7 +695,7 @@ int main()
 				else if (choca)
 				{
 					// Activa animacion del objeto jerarquico
-					if (wm1_inicio){}
+					if (wm1_inicio) {}
 					else
 					{
 						wm1_inicio = true;
@@ -685,7 +707,7 @@ int main()
 						t_curva += 0.001;
 
 						movx_canica = -10.47 + (glm::sqrt(845.92) * glm::cos(t_curva));
-						movy_canica -= 0.005 * deltaTime * 1.5;
+						movy_canica -= 0.005 * deltaTime;
 						movz_canica = -12.05 + (glm::sqrt(845.92) * glm::sin(t_curva));
 					}
 					else
@@ -702,7 +724,7 @@ int main()
 					{
 						t_curva -= 0.0005;
 						movx_canica = 73.12 + (glm::sqrt(3503.15) * glm::cos(t_curva));
-						movy_canica -= 0.005 * deltaTime * 1.5;
+						movy_canica -= 0.005 * deltaTime;
 						movz_canica = 15.88 + (glm::sqrt(3503.15) * glm::sin(t_curva));
 					}
 					else
@@ -719,11 +741,11 @@ int main()
 					{
 						if (movx_canica >= 11.11)
 						{
-							movy_canica += 0.01 * deltaTime * 1.5;
+							movy_canica += 0.005 * deltaTime;
 						}
 						else if (movy_canica >= 48.35)
 						{
-							movy_canica -= 0.02 * deltaTime * 1.5;
+							movy_canica -= 0.005 * deltaTime;
 						}
 
 						t_curva -= 0.01;
@@ -735,14 +757,14 @@ int main()
 						if (movz_canica <= 26.0)
 						{
 							movz_canica += canica_offset * deltaTime * 4;
-							movy_canica -= 0.01 * deltaTime * 1.5;
+							movy_canica -= 0.01 * deltaTime;
 						}
 						else
 						{
 							choca1 = false;
 							canica_animacion = false;
 						}
-						
+
 					}
 				}
 			}
@@ -775,7 +797,7 @@ int main()
 				choca1 = false;
 			}
 		}
-		
+
 		// Animacion del objeto jerarquico
 		if (wm1_inicio) {
 			// Caparazon se separa
@@ -805,9 +827,9 @@ int main()
 			{
 				wm1_cont1++;
 			}
-			else 
-			{ 
-				wm1_cont1 = 0; 
+			else
+			{
+				wm1_cont1 = 0;
 			}
 
 			if (wm1_cont1 == 1)
@@ -820,10 +842,8 @@ int main()
 			}
 			else
 			{
-
 				//La luz se apagara independientemente del estado
 				shaderList[0].SetPointLights(pointLights1, pointLightCount - 1);
-
 				if (wm1_arc_der_x <= 30.0)
 				{
 					wm1_arc_der_x += 10.0;
@@ -851,6 +871,29 @@ int main()
 		}
 
 		/* Modelos */
+
+		//Aguijon
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-1.0f, 52.0f, -10.0f));
+		model = glm::rotate(model, -70 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Nail_M.RenderModel();
+
+		//soñadores
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(0.0f, 49.0f, 26.0f));
+		model = glm::rotate(model, 3 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.03f, 0.03f, 0.03f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Dreamers_M.RenderModel();
+
+		//soñadores
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(16.0f, 49.0f, 26.0f));
+		model = glm::rotate(model, 3 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.03f, 0.03f, 0.03f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Dreamers_M.RenderModel();
 
 		// Moneda
 		model = glm::mat4(1.0f);
@@ -1040,7 +1083,6 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Gabinete_M.RenderModel();
 
-		// Cristal
 		//blending: transparencia o traslucidez
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1048,17 +1090,18 @@ int main()
 
 		//Cristal
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.0f, 5.45f, -1.2f));
+		model = glm::translate(model, glm::vec3(0.0f, 55.0f, 10.0f));
+		model = glm::rotate(model, 180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
-		
+
 		//blending: transparencia o traslucidez
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		
+
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Cristal_M.RenderModel();
-		
+
 		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}
