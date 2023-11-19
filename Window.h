@@ -21,7 +21,6 @@ public:
 
 	// Funciones para el control del mouse
 	GLboolean getScroll() { return scroll; }
-	GLboolean getRetroceder() { return retroceder; }
 
 	// Funciones para las animaciones
 	GLboolean getReset() { return reset; }
@@ -35,11 +34,6 @@ public:
 	// Funciones para los flippers
 	GLfloat getFlipper1() { return angulo_flipper1; }
 	GLfloat getFlipper2() { return angulo_flipper2; }
-
-	// Funciones para el avatar
-	GLfloat getAvatarX() { return avatarX; }
-	GLfloat getAvatarY() { return avatarY; }
-	GLfloat getAvatarZ() { return avatarZ; }
 
 	// Funciones para las luces
 	GLboolean getLampara() { return lampara; }
@@ -90,12 +84,6 @@ private:
 	// Banderas de control para los flippers
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
-
-	// Banderas para el avatar
-	GLfloat avatarX = 22.75;
-	GLfloat avatarY = 48;
-	GLfloat avatarZ = 24;
-	GLboolean retroceder = false;
 
 	static void ManejaTeclado(GLFWwindow* window, int key, int code, int action, int mode);
 	static void ManejaMouse(GLFWwindow* window, double xPos, double yPos);

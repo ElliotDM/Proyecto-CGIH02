@@ -29,14 +29,19 @@
 #include "SpotLight.h"
 #include "Material.h"
 
-// Variables para el zoom
+// Variables para las camaras
 float zoomY;
 float zoomZ;
+float posX;
+float posY;
+float posZ;
+bool enableMouse;
 
 // Variables para el contador de dia y noche
-bool day;
 int counterHour;
 int counterDay;
+bool day;
+bool firts_Light;
 
 // Variables y banderas para animacion
 
@@ -51,10 +56,10 @@ float rot_moneda;
 bool animacion;
 
 // Resorte
-bool resorte;
-bool espera;
 float zResorte;
 float zManija;
+bool resorte;
+bool espera;
 
 // Canica
 float movx_canica;
@@ -71,7 +76,6 @@ bool curva;
 bool choca1;
 
 // Wingmoulds
-bool wm1_inicio;
 float wm1_izq;
 float wm1_der;
 float wm1_arc;
@@ -81,6 +85,7 @@ float wm1_arc_izq_x;
 float wm1_arc_izq_z;
 int wm1_cont1;
 int wm1_cont2;
+bool wm1_inicio;
 
 // Sierra
 float rotSierra;
@@ -122,6 +127,7 @@ Skybox skybox;
 // Materiales
 Material Material_brillante;
 Material Material_opaco;
+Material Material_metalico;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -130,8 +136,6 @@ static double limitFPS = 1.0 / 60.0;
 // luz direccional
 DirectionalLight mainLightDay;
 DirectionalLight mainLightNight;
-
-bool firts_Light = true;
 
 // luces de tipo pointlight
 PointLight pointLights[MAX_POINT_LIGHTS];
@@ -176,6 +180,7 @@ void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat
 	}
 }
 
+
 void CreateObjects()
 {
 	unsigned int indices[] = {
@@ -204,12 +209,14 @@ void CreateObjects()
 	calcAverageNormals(indices, 12, vertices, 32, 8, 5);
 }
 
+
 void CreateShaders()
 {
 	Shader* shader1 = new Shader();
 	shader1->CreateFromFiles(vShader, fShader);
 	shaderList.push_back(*shader1);
 }
+
 
 int main()
 {
@@ -274,7 +281,6 @@ int main()
 	Dreamers_M = Model();
 	Dreamers_M.LoadModel("Models/dreamers.obj");
 
-
 	std::vector<std::string> skyboxFacesDay;
 	skyboxFacesDay.push_back("Textures/Skybox/day_lf.png");
 	skyboxFacesDay.push_back("Textures/Skybox/day_rt.png");
@@ -295,6 +301,7 @@ int main()
 
 	Material_brillante = Material(4.0f, 256);
 	Material_opaco = Material(0.3f, 4);
+	Material_metalico = Material(10.0f, 300);
 
 	//luz direccional
 	mainLightDay = DirectionalLight(1.0f, 1.0f, 1.0f,
@@ -348,6 +355,7 @@ int main()
 	//Inicializacion de variables para zoom
 	zoomY = 75.0;
 	zoomZ = 60.0;
+	enableMouse = false;
 
 	// Inicializacion de variables para animacion
 
@@ -400,6 +408,7 @@ int main()
 	day = true;
 	counterHour = 0;
 	counterDay = 0;
+	firts_Light = true;
 
 	while (!mainWindow.getShouldClose())
 	{
@@ -441,27 +450,28 @@ int main()
 		if (mainWindow.getCamaraIsometrica())
 		{
 			camera = Camera(glm::vec3(8.0f, zoomY, zoomZ), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
+			enableMouse = false;
 		}
 
 		// Camara ligada al avatar
-		if (mainWindow.getCamaraAvatar())
+
+		if (mainWindow.getCamaraAvatar() && !(enableMouse))
 		{
-			// Si se retrocede se le cambia el signo a yaw para apuntar 
-			// la camara hacia la direccion correcta en que se esta mirando
-			if (mainWindow.getRetroceder())
-			{
-				camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() - 0.5), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, -20.0f, 0.3f, 0.5f);
-			}
-			else
-			{
-				camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() + 0.5), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
-			}
+			camera = Camera(glm::vec3(22.75, 49.0, 25.0), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
+			enableMouse = true;
+		}
+
+		if (enableMouse)
+		{
+			camera.keyControl(mainWindow.getsKeys(), deltaTime);
+			camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 		}
 
 		// Camara Top Down
 		if (mainWindow.getCamaraTopDown())
 		{
 			camera = Camera(glm::vec3(8.0f, 110.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, -90.0f, 0.3f, 0.5f);
+			enableMouse = false;
 		}
 
 		// Clear the window
@@ -933,6 +943,7 @@ int main()
 		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica_M.RenderModel();
+		Material_metalico.UseMaterial(uniformSpecularIntensity, uniformShininess);
 
 		// Flipper 1
 		model = glm::mat4(1.0);
@@ -1030,19 +1041,19 @@ int main()
 
 		// Huevo
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(9.7f, 49.1f, 4.4f));
+		model = glm::translate(model, glm::vec3(9.7f, 49.2f, 4.4f));
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Huevo_M.RenderModel();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(5.2f, 49.0f, 8.1f));
+		model = glm::translate(model, glm::vec3(5.2f, 49.1f, 8.1f));
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Huevo_M.RenderModel();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(4.4f, 49.3f, 2.2f));
+		model = glm::translate(model, glm::vec3(4.4f, 49.4f, 2.2f));
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Huevo_M.RenderModel();
@@ -1065,14 +1076,31 @@ int main()
 		Sierra_M.RenderModel();
 
 		/* Avatar */
+		// TODO: cambiar canica por avatar
+		//		 programar animacion de mov del avatar
+
+		posX = camera.getCameraPosition().x;
+		posY = camera.getCameraPosition().y;
+		posZ = camera.getCameraPosition().z;
+
 		if (mainWindow.getCamaraAvatar())
 		{
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY(), mainWindow.getAvatarZ()));
-			model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-			model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
-			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			Canica_M.RenderModel();
+			if (camera.getCameraDirection().z < 0.0) 
+			{
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, glm::vec3(posX, posY - 0.5, posZ - 0.5));
+				model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+				glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+				Canica_M.RenderModel();
+			}
+			else
+			{
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, glm::vec3(posX, posY - 0.5, posZ));
+				model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+				glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+				Canica_M.RenderModel();
+			}
 		}
 
 		/* Gabinete */
