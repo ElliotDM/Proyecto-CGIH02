@@ -40,7 +40,12 @@ public:
 	GLboolean getLampara() { return lampara; }
 	GLboolean getlightFlippers() { return lightFlippers; }
 	GLboolean gethierarchicalObject() { return hierarchicalObject; }
+	GLboolean gethierarchicalObject2() { return hierarchicalObject2; }
+	GLboolean gethierarchicalObject3() { return hierarchicalObject3; }
 
+	GLboolean getObject1() { return Object1; }
+	GLboolean getObject2() { return Object2; }
+	GLboolean getObject3() { return Object3; }
 
 	bool getShouldClose()
 	{
@@ -77,6 +82,12 @@ private:
 	GLboolean lampara = true;
 	GLboolean lightFlippers = true;
 	GLboolean hierarchicalObject = true;
+	GLboolean hierarchicalObject2 = true;
+	GLboolean hierarchicalObject3 = true;
+
+	GLboolean Object1 = true;
+	GLboolean Object2 = false;
+	GLboolean Object3 = false;
 
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
