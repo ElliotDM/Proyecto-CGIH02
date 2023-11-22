@@ -29,6 +29,10 @@
 #include "SpotLight.h"
 #include "Material.h"
 
+//Para el audio
+#include <irrklang\irrKlang.h>
+using namespace irrklang;
+
 // Variables para el zoom
 float zoomY;
 float zoomZ;
@@ -136,6 +140,13 @@ bool firts_Light = true;
 // luces de tipo pointlight
 PointLight pointLights[MAX_POINT_LIGHTS];
 PointLight pointLights1[MAX_POINT_LIGHTS];
+PointLight pointLights2[MAX_POINT_LIGHTS];
+PointLight pointLights3[MAX_POINT_LIGHTS];
+PointLight pointLights4[MAX_POINT_LIGHTS];
+PointLight pointLights5[MAX_POINT_LIGHTS];
+PointLight pointLights6[MAX_POINT_LIGHTS];
+PointLight pointLights7[MAX_POINT_LIGHTS];
+
 
 // luces de tipo spotlight
 SpotLight spotLights[MAX_SPOT_LIGHTS];
@@ -311,22 +322,69 @@ int main()
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
 
-	//Pointlight del objeto jeraquico
-	pointLights[0] = PointLight(1.0f, 1.0f, 1.0f,
-		0.0f, 1.0f,
-		15.5f, 50.9f, -23.5,
-		1.0f, 0.2f, 0.1f);
-	pointLightCount++;
-
-	// PointLight de los flippers
-	pointLights[1] = PointLight(1.0f, 0.0f, 0.0f,
+	//Pointlight de los flippers
+	pointLights[0] = PointLight(1.0f, 0.0f, 0.0f,
 		0.0f, 1.0f,
 		8.0f, 48.0f, 21.0f,
-		1.0f, 0.02f, 0.01f);
+		1.0f, 0.2f, 0.01f);
 	pointLightCount++;
 
-	pointLights1[0] = pointLights[1];
-	pointLights1[1] = pointLights[0];
+	// PointLight del objeto jeraquico 1
+	pointLights[1] = PointLight(0.90f, 0.89f, 0.88f,
+		0.0f, 1.0f,
+		15.2f, 50.9f, -23.5,
+		1.0f, 0.2f, 0.01f);
+	pointLightCount++;
+
+	// PointLight del objeto jeraquico 2
+	pointLights[2] = PointLight(0.392f, 0.419f, 0.462f,
+		0.0f, 1.0f,
+		16.2f, 50.7f, -18.5,
+		1.0f, 0.2f, 0.01f);
+	pointLightCount++;
+
+	// PointLight del objeto jeraquico 3
+	pointLights[3] = PointLight(0.749f, 0.764f, 0.788f,
+		0.0f, 1.0f,
+		10.7f, 50.8f, -20.4,
+		1.0f, 0.2f, 0.01f);
+	pointLightCount++;
+
+	pointLights1[0] = pointLights[0];
+	pointLights1[1] = pointLights[1];
+	pointLights1[2] = pointLights[3];
+	pointLights1[3] = pointLights[2];
+
+	pointLights2[0] = pointLights[0];
+	pointLights2[1] = pointLights[2];
+	pointLights2[2] = pointLights[3];
+	pointLights2[3] = pointLights[1];
+
+	pointLights3[0] = pointLights[0];
+	pointLights3[1] = pointLights[3];
+	pointLights3[2] = pointLights[1];
+	pointLights3[3] = pointLights[2];
+
+	pointLights4[0] = pointLights[1];
+	pointLights4[1] = pointLights[2];
+	pointLights4[2] = pointLights[3];
+	pointLights4[3] = pointLights[0];
+
+	pointLights5[0] = pointLights[1];
+	pointLights5[1] = pointLights[3];
+	pointLights5[2] = pointLights[2];
+	pointLights5[3] = pointLights[0];
+
+	pointLights6[0] = pointLights[2];
+	pointLights6[1] = pointLights[3];
+	pointLights6[2] = pointLights[1];
+	pointLights6[3] = pointLights[0];
+
+	pointLights7[0] = pointLights[3];
+	pointLights7[1] = pointLights[2];
+	pointLights7[2] = pointLights[1];
+	pointLights7[3] = pointLights[0];
+
 
 	//contador de luces spotlight
 	unsigned int spotLightCount = 0;
@@ -401,6 +459,22 @@ int main()
 	counterHour = 0;
 	counterDay = 0;
 
+//***************************************************************//
+// inicie el motor de sonido con los parámetros predeterminados
+	ISoundEngine* audio = createIrrKlangDevice();
+
+	if (!audio)
+		return 0; //Error en el audio
+
+	//audio->play2D("breakout.mp3", true); //Reproducce el audio en ciclo
+
+	audio->play2D("PathofPain.mp3", true); //Reproducce el audio en ciclo
+
+	ISoundEngine* SoundEngine = createIrrKlangDevice();
+
+	//***************************************************************//
+
+	//Loop mientras no se cierre la ventana
 	while (!mainWindow.getShouldClose())
 	{
 		GLfloat now = glfwGetTime();
@@ -517,23 +591,85 @@ int main()
 		}
 
 		//Para prender y apagar las pointLights
-		//shaderList[0].SetPointLights(pointLights, pointLightCount);
-
-		if (mainWindow.getlightFlippers() == false and mainWindow.gethierarchicalObject() == false)
-		{
-			shaderList[0].SetPointLights(pointLights, pointLightCount - 2);
-		}
-		else if (mainWindow.getlightFlippers() == false and mainWindow.gethierarchicalObject() == true)
-		{
-			shaderList[0].SetPointLights(pointLights1, pointLightCount - 1);
-		}
-		else if (mainWindow.getlightFlippers() == true and mainWindow.gethierarchicalObject() == false)
-		{
-			shaderList[0].SetPointLights(pointLights, pointLightCount - 1);
-		}
-		else if (mainWindow.getlightFlippers() == true and mainWindow.gethierarchicalObject() == true)
+		//Caso 1
+		if (mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
 		{
 			shaderList[0].SetPointLights(pointLights, pointLightCount);
+		}
+		//Caso 2
+		if (mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights, pointLightCount-1);
+		}
+		//Caso 3
+		if (mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights1, pointLightCount-1);
+		}
+		//Caso 4
+		if (mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights1, pointLightCount-2);
+		}
+		//Caso 5
+		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights2, pointLightCount-1);
+		}
+		//Caso 6
+		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights2, pointLightCount-2);
+		}
+		//Caso 7
+		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights3, pointLightCount-2);
+		}
+		//Caso 8
+		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights3, pointLightCount-3);
+		}
+		//Caso 9
+		if (!mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights4, pointLightCount-1);
+		}
+		//Caso 10
+		if (!mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights4, pointLightCount-2);
+		}
+		//Caso 11
+		if (!mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights5, pointLightCount-2);
+		}
+		//Caso 12
+		if (!mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights5, pointLightCount-3);
+		}
+		//Caso 13
+		if (!mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights6, pointLightCount-2);
+		}
+		//Caso 14
+		if (!mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights6, pointLightCount-3);
+		}
+		//Caso 15
+		if (!mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights7, pointLightCount-3);
+		}
+		//Caso 16
+		if (!mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights7, pointLightCount-4);
 		}
 
 		//Solo hay una spotligh, la cual ilumina al pinball
