@@ -1,4 +1,4 @@
-#define STB_IMAGE_IMPLEMENTATION
+﻿#define STB_IMAGE_IMPLEMENTATION
 
 #include <stdio.h>
 #include <string.h>
@@ -22,13 +22,30 @@
 #include"Model.h"
 #include "Skybox.h"
 
-//para iluminaci�n
+//para iluminacion
 #include "CommonValues.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
 #include "SpotLight.h"
 #include "Material.h"
 
+//Para el audio
+#include <irrklang\irrKlang.h>
+using namespace irrklang;
+
+// Variables para las camaras
+float zoomY;
+float zoomZ;
+float posX;
+float posY;
+float posZ;
+bool enableMouse;
+
+// Variables para el contador de dia y noche
+bool day;
+int counterHour;
+int counterDay;
+bool firts_Light;
 
 // Variables y banderas para animacion
 
@@ -85,26 +102,29 @@ std::vector<Shader> shaderList;
 
 Camera camera;
 
-Texture monedaTexture;
 Texture gabineteTexture;
+Texture cristalTexture;
+Texture monedaTexture;
 Texture canicaTexture;
 Texture resorteTexture;
 Texture wingmouldTexture;
 Texture sierraTexture;
 
 Model Gabinete_M;
+Model Cristal_M;
 Model Moneda_M;
 Model Canica_M;
 Model Resorte_M;
 Model Manija_M;
 Model ManijaRes_M;
-Model Cristal_M;
 Model Flipper_M;
 Model WingMould_C;
 Model WingMould_L;
 Model WingMould_R;
 Model Sierra_M;
 Model Huevo_M;
+Model Nail_M;
+Model Dreamers_M;
 
 Skybox skybox;
 
@@ -119,8 +139,18 @@ static double limitFPS = 1.0 / 60.0;
 // luz direccional
 DirectionalLight mainLightDay;
 DirectionalLight mainLightNight;
+
 // luces de tipo pointlight
 PointLight pointLights[MAX_POINT_LIGHTS];
+PointLight pointLights1[MAX_POINT_LIGHTS];
+PointLight pointLights2[MAX_POINT_LIGHTS];
+PointLight pointLights3[MAX_POINT_LIGHTS];
+PointLight pointLights4[MAX_POINT_LIGHTS];
+PointLight pointLights5[MAX_POINT_LIGHTS];
+PointLight pointLights6[MAX_POINT_LIGHTS];
+PointLight pointLights7[MAX_POINT_LIGHTS];
+
+
 // luces de tipo spotlight
 SpotLight spotLights[MAX_SPOT_LIGHTS];
 
@@ -131,7 +161,7 @@ static const char* vShader = "shaders/shader_light.vert";
 static const char* fShader = "shaders/shader_light.frag";
 
 
-//funci�n de calculo de normales por promedio de v�rtices 
+//funcion de calculo de normales por promedio de vertices 
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
 	unsigned int vLength, unsigned int normalOffset)
 {
@@ -203,27 +233,35 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(10.0f, 80.0f, 40.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
+	// Se cargan las texturas de los elementos del pinball
+	gabineteTexture = Texture("Textures/prueba.png");
+	gabineteTexture.LoadTextureA();
+	cristalTexture = Texture("Textures/Glass.tga");
+	cristalTexture.LoadTextureA();
 
 	monedaTexture = Texture("Textures/moneda.png");
 	monedaTexture.LoadTextureA();
-	gabineteTexture = Texture("Textures/prueba.png");
-	gabineteTexture.LoadTextureA();
 	canicaTexture = Texture("Textures/canica.png");
 	canicaTexture.LoadTextureA();
 	resorteTexture = Texture("Textures/resorte.png");
 	resorteTexture.LoadTextureA();
+
 	wingmouldTexture = Texture("Textures/wingmould.png");
 	wingmouldTexture.LoadTextureA();
+
 	sierraTexture = Texture("Textures/saw.png");
 	sierraTexture.LoadTextureA();
-	
+
+	// Se cargan los modelos de los elementos del pinball
 	Gabinete_M = Model();
 	Gabinete_M.LoadModel("Models/gabinete.obj");
+	Cristal_M = Model();
+	Cristal_M.LoadModel("Models/cristal.obj");
 	Manija_M = Model();
 	Manija_M.LoadModel("Models/manija.obj");
 	ManijaRes_M = Model();
 	ManijaRes_M.LoadModel("Models/manija_res.obj");
+
 	Moneda_M = Model();
 	Moneda_M.LoadModel("Models/moneda.obj");
 	Canica_M = Model();
@@ -232,16 +270,24 @@ int main()
 	Resorte_M.LoadModel("Models/resorte.obj");
 	Flipper_M = Model();
 	Flipper_M.LoadModel("Models/flipper.obj");
+
 	WingMould_C = Model();
 	WingMould_C.LoadModel("Models/wingmould_C.obj");
 	WingMould_L = Model();
 	WingMould_L.LoadModel("Models/wingmould_L.obj");
 	WingMould_R = Model();
 	WingMould_R.LoadModel("Models/wingmould_R.obj");
+
 	Sierra_M = Model();
 	Sierra_M.LoadModel("Models/sierra.obj");
 	Huevo_M = Model();
 	Huevo_M.LoadModel("Models/huevo.obj");
+
+	Nail_M = Model();
+	Nail_M.LoadModel("Models/nail.obj");
+	Dreamers_M = Model();
+	Dreamers_M.LoadModel("Models/dreamers.obj");
+
 
 	std::vector<std::string> skyboxFacesDay;
 	skyboxFacesDay.push_back("Textures/Skybox/day_lf.png");
@@ -273,18 +319,97 @@ int main()
 		0.2f, 0.2f,
 		0.0f, 0.0f, -1.0f);
 
+	//Se carga la primera luz direccional
+	shaderList[0].SetDirectionalLight(&mainLightDay);
+
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
 
+	//Pointlight de los flippers
+	pointLights[0] = PointLight(1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f,
+		8.0f, 48.0f, 21.0f,
+		1.0f, 0.2f, 0.01f);
+	pointLightCount++;
+
+	// PointLight del objeto jeraquico 1
+	pointLights[1] = PointLight(0.90f, 0.89f, 0.88f,
+		0.0f, 1.0f,
+		15.2f, 50.9f, -23.5,
+		1.0f, 0.2f, 0.01f);
+	pointLightCount++;
+
+	// PointLight del objeto jeraquico 2
+	pointLights[2] = PointLight(0.392f, 0.419f, 0.462f,
+		0.0f, 1.0f,
+		16.2f, 50.7f, -18.5,
+		1.0f, 0.2f, 0.01f);
+	pointLightCount++;
+
+	// PointLight del objeto jeraquico 3
+	pointLights[3] = PointLight(0.749f, 0.764f, 0.788f,
+		0.0f, 1.0f,
+		10.7f, 50.8f, -20.4,
+		1.0f, 0.2f, 0.01f);
+	pointLightCount++;
+
+	pointLights1[0] = pointLights[0];
+	pointLights1[1] = pointLights[1];
+	pointLights1[2] = pointLights[3];
+	pointLights1[3] = pointLights[2];
+
+	pointLights2[0] = pointLights[0];
+	pointLights2[1] = pointLights[2];
+	pointLights2[2] = pointLights[3];
+	pointLights2[3] = pointLights[1];
+
+	pointLights3[0] = pointLights[0];
+	pointLights3[1] = pointLights[3];
+	pointLights3[2] = pointLights[1];
+	pointLights3[3] = pointLights[2];
+
+	pointLights4[0] = pointLights[1];
+	pointLights4[1] = pointLights[2];
+	pointLights4[2] = pointLights[3];
+	pointLights4[3] = pointLights[0];
+
+	pointLights5[0] = pointLights[1];
+	pointLights5[1] = pointLights[3];
+	pointLights5[2] = pointLights[2];
+	pointLights5[3] = pointLights[0];
+
+	pointLights6[0] = pointLights[2];
+	pointLights6[1] = pointLights[3];
+	pointLights6[2] = pointLights[1];
+	pointLights6[3] = pointLights[0];
+
+	pointLights7[0] = pointLights[3];
+	pointLights7[1] = pointLights[2];
+	pointLights7[2] = pointLights[1];
+	pointLights7[3] = pointLights[0];
+
+
 	//contador de luces spotlight
 	unsigned int spotLightCount = 0;
+
+	//SpotLight del Pinball
+	spotLights[0] = SpotLight(1.0f, 1.0f, 1.0f,
+		0.0f, 2.0f,
+		10.0f, 200.0f, -10.0f,
+		0.0f, -1.0f, 0.0f,
+		0.5f, 0.01f, 0.0f,
+		15.0f);
+	spotLightCount++;
 
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
 		uniformSpecularIntensity = 0, uniformShininess = 0;
 	GLuint uniformColor = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
-<<<<<<< HEAD
+	//Inicializacion de variables para zoom
+	zoomY = 75.0;
+	zoomZ = 60.0;
+
 	// Inicializacion de variables para animacion
 
 	// Offsets
@@ -331,13 +456,29 @@ int main()
 
 	// Sierra
 	rotSierra = 0.0;
-=======
-	//Variables para el contador de dia y noche
-	bool day =  true;
-	int counterHour = 0;
-	int counterDay = 0;
->>>>>>> main
 
+	// Inicializacion de variables para el contador de dia y noche
+	day = true;
+	counterHour = 0;
+	counterDay = 0;
+	firts_Light = true;
+
+	//***************************************************************//
+	// inicie el motor de sonido con los parámetros predeterminados
+	ISoundEngine* audio = createIrrKlangDevice();
+
+	if (!audio)
+		return 0; //Error en el audio
+
+	//audio->play2D("breakout.mp3", true); //Reproducce el audio en ciclo
+
+	audio->play2D("PathofPain.mp3", true); //Reproducce el audio en ciclo
+
+	ISoundEngine* SoundEngine = createIrrKlangDevice();
+
+	//***************************************************************//
+
+	//Loop mientras no se cierre la ventana
 	while (!mainWindow.getShouldClose())
 	{
 		GLfloat now = glfwGetTime();
@@ -347,8 +488,60 @@ int main()
 
 		// Recibir eventos del usuario
 		glfwPollEvents();
-		camera.keyControl(mainWindow.getsKeys(), deltaTime);
-		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+
+		// Zoom para camara del jugador
+		if (mainWindow.getScroll())
+		{
+			if (zoomY > 65.0f)
+			{
+				zoomY -= 0.1 * deltaTime;
+				zoomZ -= 0.2 * deltaTime;
+			}
+			else
+			{
+			}
+		}
+		else
+		{
+			if (zoomY < 75.0f)
+			{
+				zoomY += 0.1 * deltaTime;
+				zoomZ += 0.2 * deltaTime;
+			}
+			else
+			{
+			}
+		}
+
+		// Condicionales para el cambio de camara
+
+		// Camara isomatrica
+		if (mainWindow.getCamaraIsometrica())
+		{
+			camera = Camera(glm::vec3(8.0f, zoomY, zoomZ), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
+			enableMouse = false;
+		}
+
+		// Camara ligada al avatar
+
+		if (mainWindow.getCamaraAvatar() && !(enableMouse))
+		{
+			camera = Camera(glm::vec3(22.75, 49.0, 25.0), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
+			enableMouse = true;
+		}
+
+		if (enableMouse)
+		{
+			camera.keyControl(mainWindow.getsKeys(), deltaTime);
+			camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+		}
+
+		// Camara Top Down
+		if (mainWindow.getCamaraTopDown())
+		{
+			camera = Camera(glm::vec3(8.0f, 110.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, -90.0f, 0.3f, 0.5f);
+			enableMouse = false;
+		}
 
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -361,7 +554,7 @@ int main()
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
 
-		// informaci�n en el shader de intensidad especular y brillo
+		// informacion en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
 		uniformShininess = shaderList[0].GetShininessLocation();
 
@@ -369,26 +562,36 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		// informaci�n al shader de fuentes de iluminaci�n
+		// Informacion al shader de fuentes de iluminacion
 
-		//Para el cambio entre dia y noche
+		// Condiciones para el cambio entre dia y noche
+		// el skybox y la luz direccional cambian cada 20 segundos
+
+		//Se carga la primera luz direccional de dia
+		if (firts_Light)
+		{
+			shaderList[0].SetDirectionalLight(&mainLightDay);
+		}
+
+		//Se empieza el conteo para realizar el cambio entre dia y noche
 		if ((int)now % 2 == 0)
-		{
 			counterHour++;
-		}
-		else counterHour = 0;
+		else
+			counterHour = 0;
+
 		if (counterHour == 1)
-		{
 			counterDay++;
-		}
+
 		if (counterDay == 10)
 		{
 			counterDay = 0;
+
 			if (day)
 			{
 				shaderList[0].SetDirectionalLight(&mainLightDay);
 				skybox = Skybox(skyboxFacesDay);
 				day = false;
+				firts_Light = false;
 			}
 			else
 			{
@@ -398,8 +601,97 @@ int main()
 			}
 		}
 
-		shaderList[0].SetPointLights(pointLights, pointLightCount);
-		shaderList[0].SetSpotLights(spotLights, spotLightCount);
+		//Para prender y apagar las pointLights
+		//Caso 1
+		if (mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights, pointLightCount);
+		}
+		//Caso 2
+		if (mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights, pointLightCount-1);
+		}
+		//Caso 3
+		if (mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights1, pointLightCount-1);
+		}
+		//Caso 4
+		if (mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights1, pointLightCount-2);
+		}
+		//Caso 5
+		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights2, pointLightCount-1);
+		}
+		//Caso 6
+		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights2, pointLightCount-2);
+		}
+		//Caso 7
+		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights3, pointLightCount-2);
+		}
+		//Caso 8
+		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights3, pointLightCount-3);
+		}
+		//Caso 9
+		if (!mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights4, pointLightCount-1);
+		}
+		//Caso 10
+		if (!mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights4, pointLightCount-2);
+		}
+		//Caso 11
+		if (!mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights5, pointLightCount-2);
+		}
+		//Caso 12
+		if (!mainWindow.getlightFlippers() and mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights5, pointLightCount-3);
+		}
+		//Caso 13
+		if (!mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights6, pointLightCount-2);
+		}
+		//Caso 14
+		if (!mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights6, pointLightCount-3);
+		}
+		//Caso 15
+		if (!mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights7, pointLightCount-3);
+		}
+		//Caso 16
+		if (!mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and !mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
+		{
+			shaderList[0].SetPointLights(pointLights7, pointLightCount-4);
+		}
+
+		//Solo hay una spotligh, la cual ilumina al pinball
+		if (mainWindow.getLampara())
+		{
+			shaderList[0].SetSpotLights(spotLights, spotLightCount);
+		}
+		else
+		{
+			shaderList[0].SetSpotLights(spotLights, spotLightCount - 1);
+		}
 
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
@@ -408,8 +700,11 @@ int main()
 
 		/* Animaciones */
 
+		// Reinicio forzado de la animacion
 		if (mainWindow.getReset())
 		{
+			canica_offset = 0.05f;
+
 			// Moneda
 			mov_moneda = 33.0f;
 			rot_moneda = 0.0f;
@@ -466,6 +761,7 @@ int main()
 				{
 					resorte = true;
 					canica_init = false;
+					canica_offset = 0.01;
 				}
 			}
 			// Resorte
@@ -483,7 +779,7 @@ int main()
 				{
 					zResorte -= 0.0005;
 					zManija += 0.005;
-					movz_canica += (canica_offset / 2) * deltaTime;
+					movz_canica += canica_offset * deltaTime;
 				}
 				// Si el usuario mantiene pulsado el click derecho
 				// mantener el resorte comprimido
@@ -494,6 +790,7 @@ int main()
 				else if (!(mainWindow.getResorte()) && zResorte < 0.3) {
 					zResorte = 0.3;
 					zManija = 50.0;
+					canica_offset = 0.4f;
 					espera = true;
 				}
 			}
@@ -505,8 +802,8 @@ int main()
 				{
 					if (movz_canica >= -22.5)
 					{
-						movz_canica -= canica_offset * deltaTime * 4;
-						movy_canica += 0.01 * deltaTime;
+						movz_canica -= canica_offset * deltaTime;
+						movy_canica = -0.053 * movz_canica + 49.267;
 						rot_canica += rot_offset * deltaTime;
 					}
 					else
@@ -521,29 +818,23 @@ int main()
 					// Sigue una trayectoria de un circulo
 					if (t_curva <= 3.0)
 					{
-						if (movy_canica <= 50.6)
-						{
-							movy_canica += 0.0001;
-						}
-
-						t_curva += 0.01;
+						t_curva += 0.05 * deltaTime;
 						movx_canica = 19.5 + (3 * glm::cos(t_curva));
 						movz_canica = -22.5 - (3 * glm::sin(t_curva));
+						movy_canica = -0.053 * movz_canica + 49.267;
 					}
 					else
 					{
 						t_curva = -0.4f;
 						salida = false;
 						choca = true;
-
-						// Aumentar puntuacion (cambiar textura)
 					}
 				}
 				// Canica choca con obstaculo y rebota
 				else if (choca)
 				{
 					// Activa animacion del objeto jerarquico
-					if (wm1_inicio){}
+					if (wm1_inicio) {}
 					else
 					{
 						wm1_inicio = true;
@@ -552,11 +843,10 @@ int main()
 					// Sigue una trayectoria de un circulo
 					if (t_curva <= 0.4)
 					{
-						t_curva += 0.001;
-
+						t_curva += 0.008 * deltaTime;
 						movx_canica = -10.47 + (glm::sqrt(845.92) * glm::cos(t_curva));
-						movy_canica -= 0.005 * deltaTime * 1.5;
 						movz_canica = -12.05 + (glm::sqrt(845.92) * glm::sin(t_curva));
+						movy_canica = -0.053 * movz_canica + 49.267;
 					}
 					else
 					{
@@ -570,14 +860,15 @@ int main()
 				{
 					if (t_curva >= -3.1)
 					{
-						t_curva -= 0.0005;
+						t_curva -= 0.004 * deltaTime;
 						movx_canica = 73.12 + (glm::sqrt(3503.15) * glm::cos(t_curva));
-						movy_canica -= 0.005 * deltaTime * 1.5;
 						movz_canica = 15.88 + (glm::sqrt(3503.15) * glm::sin(t_curva));
+						movy_canica = -0.053 * movz_canica + 49.267;
 					}
 					else
 					{
 						t_curva = -0.46f;
+						canica_offset = 0.3f;
 						curva = false;
 						choca1 = true;
 					}
@@ -587,32 +878,24 @@ int main()
 				{
 					if (t_curva >= -3.4)
 					{
-						if (movx_canica >= 11.11)
-						{
-							movy_canica += 0.01 * deltaTime * 1.5;
-						}
-						else if (movy_canica >= 48.35)
-						{
-							movy_canica -= 0.02 * deltaTime * 1.5;
-						}
-
-						t_curva -= 0.01;
+						t_curva -= 0.06 * deltaTime;
 						movx_canica = 11.11 + (glm::sqrt(10.32) * glm::cos(t_curva));
 						movz_canica = 14.21 + (glm::sqrt(10.32) * glm::sin(t_curva));
+						movy_canica = -0.053 * movz_canica + 49.267;
 					}
 					else
 					{
 						if (movz_canica <= 26.0)
 						{
-							movz_canica += canica_offset * deltaTime * 4;
-							movy_canica -= 0.01 * deltaTime * 1.5;
+							movz_canica += canica_offset * deltaTime;
+							movy_canica = -0.053 * movz_canica + 49.267;
 						}
 						else
 						{
 							choca1 = false;
 							canica_animacion = false;
 						}
-						
+
 					}
 				}
 			}
@@ -620,6 +903,7 @@ int main()
 			else
 			{
 				animacion = true;
+				canica_offset = 0.05f;
 
 				// Moneda
 				mov_moneda = 33.0f;
@@ -645,7 +929,7 @@ int main()
 				choca1 = false;
 			}
 		}
-		
+
 		// Animacion del objeto jerarquico
 		if (wm1_inicio) {
 			// Caparazon se separa
@@ -675,15 +959,13 @@ int main()
 			{
 				wm1_cont1++;
 			}
-			else 
-			{ 
-				wm1_cont1 = 0; 
+			else
+			{
+				wm1_cont1 = 0;
 			}
 
 			if (wm1_cont1 == 1)
-			{
 				wm1_cont2++;
-			}
 
 			if (wm1_cont2 == 1)
 			{
@@ -692,6 +974,8 @@ int main()
 			}
 			else
 			{
+				//La luz se apagara independientemente del estado
+				shaderList[0].SetPointLights(pointLights1, pointLightCount - 1);
 				if (wm1_arc_der_x <= 30.0)
 				{
 					wm1_arc_der_x += 10.0;
@@ -720,13 +1004,28 @@ int main()
 
 		/* Modelos */
 
-		// Gabinete
+		//Aguijon
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
-		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		model = glm::translate(model, glm::vec3(-1.0f, 52.0f, -10.0f));
+		model = glm::rotate(model, -70 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Gabinete_M.RenderModel();
+		Nail_M.RenderModel();
 
+		//soñadores
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(0.0f, 49.0f, 26.0f));
+		model = glm::rotate(model, 3 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.03f, 0.03f, 0.03f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Dreamers_M.RenderModel();
+
+		//soñadores
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(16.0f, 49.0f, 26.0f));
+		model = glm::rotate(model, 3 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.03f, 0.03f, 0.03f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Dreamers_M.RenderModel();
 
 		// Moneda
 		model = glm::mat4(1.0f);
@@ -790,7 +1089,7 @@ int main()
 		model = glm::translate(model, glm::vec3(13.7f, 50.1f, -13.2f));
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, -mainWindow.getFlipper1() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -mainWindow.getFlipper2() * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Flipper_M.RenderModel();
 
@@ -861,76 +1160,22 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WingMould_R.RenderModel();
 
-		// Wingmould (Objeto jerarquico)
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(9.7f, 49.0f, 4.6f));
-		modelaux = model;
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_C.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_L.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_R.RenderModel();
-
-		// Wingmould (Objeto jerarquico)
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(5.2f, 48.9f, 8.2f));
-		modelaux = model;
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_C.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_L.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_R.RenderModel();
-
-		// Wingmould (Objeto jerarquico)
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(4.4f, 48.9f, 2.3f));
-		modelaux = model;
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_C.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_L.RenderModel();
-
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.5f, 0.3f, -0.2f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WingMould_R.RenderModel();
-
 		// Huevo
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-1.7f, 49.0f, 5.4f));
-		model = glm::scale(model, glm::vec3(0.7f, 0.7f, 0.7f));
+		model = glm::translate(model, glm::vec3(9.7f, 49.1f, 4.4f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Huevo_M.RenderModel();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(20.2f, 48.8f, 6.5f));
-		model = glm::scale(model, glm::vec3(0.7f, 0.7f, 0.7f));
+		model = glm::translate(model, glm::vec3(5.2f, 49.0f, 8.1f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Huevo_M.RenderModel();
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(4.4f, 49.3f, 2.2f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Huevo_M.RenderModel();
 
@@ -951,8 +1196,61 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Sierra_M.RenderModel();
 
-=======
->>>>>>> main
+		/* Avatar */
+		// TODO: cambiar canica por avatar
+		//		 programar animacion de mov del avatar
+
+		posX = camera.getCameraPosition().x;
+		posY = camera.getCameraPosition().y;
+		posZ = camera.getCameraPosition().z;
+
+		if (mainWindow.getCamaraAvatar())
+		{
+			if (camera.getCameraDirection().z < 0.0)
+			{
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, glm::vec3(posX, posY - 0.5, posZ - 0.5));
+				model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+				glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+				Canica_M.RenderModel();
+			}
+			else
+			{
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, glm::vec3(posX, posY - 0.5, posZ));
+				model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+				glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+				Canica_M.RenderModel();
+			}
+		}
+
+		/* Gabinete */
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
+		modelaux = model;
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Gabinete_M.RenderModel();
+
+		//blending: transparencia o traslucidez
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+
+		//Cristal
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.0f, 55.0f, 10.0f));
+		model = glm::rotate(model, 180 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+
+		//blending: transparencia o traslucidez
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Cristal_M.RenderModel();
+
 		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}
