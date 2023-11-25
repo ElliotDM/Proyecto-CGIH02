@@ -121,7 +121,6 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->camaraTopDown = false;
 	}
 
-	// Camara Top Down
 	if (key == GLFW_KEY_P)
 	{
 		theWindow->camaraIsometrica = false;
