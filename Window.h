@@ -30,6 +30,7 @@ public:
 
 	GLfloat getFlipper1() { return angulo_flipper1; }
 	GLfloat getFlipper2() { return angulo_flipper2; }
+	GLfloat getAction() { return flipper; }
 
 	// Funciones para las luces
 	GLboolean getLampara() { return lampara; }
@@ -91,6 +92,7 @@ private:
 	// Banderas de control para los flippers
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
+	GLboolean flipper = false;
 
 	static void ManejaTeclado(GLFWwindow* window, int key, int code, int action, int mode);
 	static void ManejaMouse(GLFWwindow* window, double xPos, double yPos);
