@@ -33,14 +33,19 @@
 #include <irrklang\irrKlang.h>
 using namespace irrklang;
 
-// Variables para el zoom
+// Variables para las camaras
 float zoomY;
 float zoomZ;
+float posX;
+float posY;
+float posZ;
+bool enableMouse;
 
 // Variables para el contador de dia y noche
 bool day;
 int counterHour;
 int counterDay;
+bool firts_Light;
 
 // Variables y banderas para animacion
 
@@ -120,6 +125,14 @@ Model Sierra_M;
 Model Huevo_M;
 Model Nail_M;
 Model Dreamers_M;
+Model IndicatorOld_M;
+Model IndicatorCoiled_M;
+Model IndicatorChannelled_M;
+Model WatcherKnightBody_M;
+Model WatcherKnightLeftArm_M;
+Model WatcherKnightRightArm_M;
+Model WatcherKnightLeftLeg_M;
+Model WatcherKnightRightLeg_M;
 
 Skybox skybox;
 
@@ -134,8 +147,6 @@ static double limitFPS = 1.0 / 60.0;
 // luz direccional
 DirectionalLight mainLightDay;
 DirectionalLight mainLightNight;
-
-bool firts_Light = true;
 
 // luces de tipo pointlight
 PointLight pointLights[MAX_POINT_LIGHTS];
@@ -285,6 +296,20 @@ int main()
 	Dreamers_M = Model();
 	Dreamers_M.LoadModel("Models/dreamers.obj");
 
+	IndicatorOld_M = Model();
+	IndicatorOld_M.LoadModel("Models/IndicatorOld.obj");
+
+	//Caballero Vigia
+	WatcherKnightBody_M = Model();
+	WatcherKnightBody_M.LoadModel("Models/WatcherKnightBody.obj");
+	WatcherKnightLeftArm_M = Model();
+	WatcherKnightLeftArm_M.LoadModel("Models/WatcherKnightLeftArm.obj");
+	WatcherKnightRightArm_M = Model();
+	WatcherKnightRightArm_M.LoadModel("Models/WatcherKnightRightArm.obj");
+	WatcherKnightLeftLeg_M = Model();
+	WatcherKnightLeftLeg_M.LoadModel("Models/WatcherKnightLeftLeg.obj");
+	WatcherKnightRightLeg_M = Model();
+	WatcherKnightRightLeg_M.LoadModel("Models/WatcherKnightRightLeg.obj");
 
 	std::vector<std::string> skyboxFacesDay;
 	skyboxFacesDay.push_back("Textures/Skybox/day_lf.png");
@@ -458,9 +483,10 @@ int main()
 	day = true;
 	counterHour = 0;
 	counterDay = 0;
+	firts_Light = true;
 
-//***************************************************************//
-// inicie el motor de sonido con los parámetros predeterminados
+  //***************************************************************//
+  // inicie el motor de sonido con los parámetros predeterminados
 	ISoundEngine* audio = createIrrKlangDevice();
 
 	if (!audio)
@@ -511,25 +537,32 @@ int main()
 
 		// Condicionales para el cambio de camara
 
-		// Camara fija viendo hacia el pinball
-		if (mainWindow.getCamaraJugador())
+		// Camara isomatrica
+		if (mainWindow.getCamaraIsometrica())
 		{
 			camera = Camera(glm::vec3(8.0f, zoomY, zoomZ), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
+			enableMouse = false;
 		}
 
-		// Camara ligada a la canica
-		if (mainWindow.getCamaraAvatar())
+		// Camara ligada al avatar
+
+		if (mainWindow.getCamaraAvatar() && !(enableMouse))
 		{
-			// Si se retrocede se le cambia el signo a yaw para apuntar 
-			// la camara hacia la direccion correcta en que se esta mirando
-			if (mainWindow.getRetroceder())
-			{
-				camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() - 0.5), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, -20.0f, 0.3f, 0.5f);
-			}
-			else
-			{
-				camera = Camera(glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY() + 0.5, mainWindow.getAvatarZ() + 0.5), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
-			}
+			camera = Camera(glm::vec3(22.75, 49.0, 25.0), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -20.0f, 0.3f, 0.5f);
+			enableMouse = true;
+		}
+
+		if (enableMouse)
+		{
+			camera.keyControl(mainWindow.getsKeys(), deltaTime);
+			camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+		}
+
+		// Camara Top Down
+		if (mainWindow.getCamaraTopDown())
+		{
+			camera = Camera(glm::vec3(8.0f, 110.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, -90.0f, 0.3f, 0.5f);
+			enableMouse = false;
 		}
 
 		// Clear the window
@@ -692,6 +725,8 @@ int main()
 		// Reinicio forzado de la animacion
 		if (mainWindow.getReset())
 		{
+			canica_offset = 0.05f;
+
 			// Moneda
 			mov_moneda = 33.0f;
 			rot_moneda = 0.0f;
@@ -748,6 +783,7 @@ int main()
 				{
 					resorte = true;
 					canica_init = false;
+					canica_offset = 0.01;
 				}
 			}
 			// Resorte
@@ -765,7 +801,7 @@ int main()
 				{
 					zResorte -= 0.0005;
 					zManija += 0.005;
-					movz_canica += (canica_offset / 2) * deltaTime;
+					movz_canica += canica_offset * deltaTime;
 				}
 				// Si el usuario mantiene pulsado el click derecho
 				// mantener el resorte comprimido
@@ -776,6 +812,7 @@ int main()
 				else if (!(mainWindow.getResorte()) && zResorte < 0.3) {
 					zResorte = 0.3;
 					zManija = 50.0;
+					canica_offset = 0.4f;
 					espera = true;
 				}
 			}
@@ -787,8 +824,8 @@ int main()
 				{
 					if (movz_canica >= -22.5)
 					{
-						movz_canica -= canica_offset * deltaTime * 4;
-						movy_canica += 0.01 * deltaTime;
+						movz_canica -= canica_offset * deltaTime;
+						movy_canica = -0.053 * movz_canica + 49.267;
 						rot_canica += rot_offset * deltaTime;
 					}
 					else
@@ -803,22 +840,16 @@ int main()
 					// Sigue una trayectoria de un circulo
 					if (t_curva <= 3.0)
 					{
-						if (movy_canica <= 50.6)
-						{
-							movy_canica += 0.0001;
-						}
-
-						t_curva += 0.01;
+						t_curva += 0.05 * deltaTime;
 						movx_canica = 19.5 + (3 * glm::cos(t_curva));
 						movz_canica = -22.5 - (3 * glm::sin(t_curva));
+						movy_canica = -0.053 * movz_canica + 49.267;
 					}
 					else
 					{
 						t_curva = -0.4f;
 						salida = false;
 						choca = true;
-
-						// Aumentar puntuacion (cambiar textura)
 					}
 				}
 				// Canica choca con obstaculo y rebota
@@ -834,11 +865,10 @@ int main()
 					// Sigue una trayectoria de un circulo
 					if (t_curva <= 0.4)
 					{
-						t_curva += 0.001;
-
+						t_curva += 0.008 * deltaTime;
 						movx_canica = -10.47 + (glm::sqrt(845.92) * glm::cos(t_curva));
-						movy_canica -= 0.005 * deltaTime;
 						movz_canica = -12.05 + (glm::sqrt(845.92) * glm::sin(t_curva));
+						movy_canica = -0.053 * movz_canica + 49.267;
 					}
 					else
 					{
@@ -852,14 +882,15 @@ int main()
 				{
 					if (t_curva >= -3.1)
 					{
-						t_curva -= 0.0005;
+						t_curva -= 0.004 * deltaTime;
 						movx_canica = 73.12 + (glm::sqrt(3503.15) * glm::cos(t_curva));
-						movy_canica -= 0.005 * deltaTime;
 						movz_canica = 15.88 + (glm::sqrt(3503.15) * glm::sin(t_curva));
+						movy_canica = -0.053 * movz_canica + 49.267;
 					}
 					else
 					{
 						t_curva = -0.46f;
+						canica_offset = 0.3f;
 						curva = false;
 						choca1 = true;
 					}
@@ -869,25 +900,17 @@ int main()
 				{
 					if (t_curva >= -3.4)
 					{
-						if (movx_canica >= 11.11)
-						{
-							movy_canica += 0.005 * deltaTime;
-						}
-						else if (movy_canica >= 48.35)
-						{
-							movy_canica -= 0.005 * deltaTime;
-						}
-
-						t_curva -= 0.01;
+						t_curva -= 0.06 * deltaTime;
 						movx_canica = 11.11 + (glm::sqrt(10.32) * glm::cos(t_curva));
 						movz_canica = 14.21 + (glm::sqrt(10.32) * glm::sin(t_curva));
+						movy_canica = -0.053 * movz_canica + 49.267;
 					}
 					else
 					{
 						if (movz_canica <= 26.0)
 						{
-							movz_canica += canica_offset * deltaTime * 4;
-							movy_canica -= 0.01 * deltaTime;
+							movz_canica += canica_offset * deltaTime;
+							movy_canica = -0.053 * movz_canica + 49.267;
 						}
 						else
 						{
@@ -902,6 +925,7 @@ int main()
 			else
 			{
 				animacion = true;
+				canica_offset = 0.05f;
 
 				// Moneda
 				mov_moneda = 33.0f;
@@ -1017,8 +1041,8 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Dreamers_M.RenderModel();
 
-		//soñadores
-		model = glm::mat4(1.0);
+    //soñadores
+    model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(16.0f, 49.0f, 26.0f));
 		model = glm::rotate(model, 3 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.03f, 0.03f, 0.03f));
@@ -1195,15 +1219,66 @@ int main()
 		Sierra_M.RenderModel();
 
 		/* Avatar */
+		// TODO: cambiar canica por avatar
+		//		 programar animacion de mov del avatar
+
+		posX = camera.getCameraPosition().x;
+		posY = camera.getCameraPosition().y;
+		posZ = camera.getCameraPosition().z;
+
 		if (mainWindow.getCamaraAvatar())
 		{
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(mainWindow.getAvatarX(), mainWindow.getAvatarY(), mainWindow.getAvatarZ()));
-			model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-			model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
-			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-			Canica_M.RenderModel();
+			if (camera.getCameraDirection().z < 0.0)
+			{
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, glm::vec3(posX, posY - 0.5, posZ - 0.5));
+				model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+				glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+				Canica_M.RenderModel();
+			}
+			else
+			{
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, glm::vec3(posX, posY - 0.5, posZ));
+				model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+				glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+				Canica_M.RenderModel();
+			}
 		}
+
+		//Avatar -> Caballero Vigia
+		//Cuerpo
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(8.5f, 50.6f, 20.0f));
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+		modelaux = model;
+		//model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightBody_M.RenderModel();
+
+		//Brazo derecho
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(4.5f, 0.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightLeftArm_M.RenderModel();
+
+		//Brazo izquierdo
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-4.5f, 0.0f, 2.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightRightArm_M.RenderModel();
+
+		//Pierna derecha
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(4.5f, -4.3f, -1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightLeftLeg_M.RenderModel();
+
+		//Pierna Izquierda
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-4.5f, -4.3f, -1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightRightLeg_M.RenderModel();
 
 		/* Gabinete */
 		model = glm::mat4(1.0);
@@ -1212,6 +1287,58 @@ int main()
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Gabinete_M.RenderModel();
+
+		//Indicadores
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(8.5f, 50.6f, -4.0f));
+		model = glm::rotate(model, -5.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 3.5f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(7.8f, 50.25f, 2.0f));
+		model = glm::rotate(model, -8.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 3.5f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(6.8f, 49.9f, 8.0f));
+		model = glm::rotate(model, -10.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 3.5f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-7.5f, 50.03f, 5.5f));
+		model = glm::rotate(model, -160.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -3.0f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, -2.0f * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-7.5f, 48.68f, 28.5f));
+		model = glm::rotate(model, 50.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 2.5f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 2.0f * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(4.5f, 48.75f, 27.5f));
+		model = glm::rotate(model, -50.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 2.0f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, -2.0f * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
 
 		//blending: transparencia o traslucidez
 		glEnable(GL_BLEND);
@@ -1230,7 +1357,7 @@ int main()
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Cristal_M.RenderModel();
+		//Cristal_M.RenderModel();
 
 		glUseProgram(0);
 		mainWindow.swapBuffers();
