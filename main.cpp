@@ -152,6 +152,14 @@ Model Sierra_M;
 Model Huevo_M;
 Model Nail_M;
 Model Dreamers_M;
+Model IndicatorOld_M;
+Model IndicatorCoiled_M;
+Model IndicatorChannelled_M;
+Model WatcherKnightBody_M;
+Model WatcherKnightLeftArm_M;
+Model WatcherKnightRightArm_M;
+Model WatcherKnightLeftLeg_M;
+Model WatcherKnightRightLeg_M;
 
 Skybox skybox;
 
@@ -327,6 +335,21 @@ int main()
 	Nail_M.LoadModel("Models/nail.obj");
 	Dreamers_M = Model();
 	Dreamers_M.LoadModel("Models/dreamers.obj");
+
+	IndicatorOld_M = Model();
+	IndicatorOld_M.LoadModel("Models/IndicatorOld.obj");
+
+	//Caballero Vigia
+	WatcherKnightBody_M = Model();
+	WatcherKnightBody_M.LoadModel("Models/WatcherKnightBody.obj");
+	WatcherKnightLeftArm_M = Model();
+	WatcherKnightLeftArm_M.LoadModel("Models/WatcherKnightLeftArm.obj");
+	WatcherKnightRightArm_M = Model();
+	WatcherKnightRightArm_M.LoadModel("Models/WatcherKnightRightArm.obj");
+	WatcherKnightLeftLeg_M = Model();
+	WatcherKnightLeftLeg_M.LoadModel("Models/WatcherKnightLeftLeg.obj");
+	WatcherKnightRightLeg_M = Model();
+	WatcherKnightRightLeg_M.LoadModel("Models/WatcherKnightRightLeg.obj");
 
 	std::vector<std::string> skyboxFacesDay;
 	skyboxFacesDay.push_back("Textures/Skybox/day_lf.png");
@@ -1694,6 +1717,40 @@ int main()
 			}
 		}*/
 
+		//Avatar -> Caballero Vigia
+		//Cuerpo
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(8.5f, 50.6f, 20.0f));
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+		modelaux = model;
+		//model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightBody_M.RenderModel();
+
+		//Brazo derecho
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(4.5f, 0.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightLeftArm_M.RenderModel();
+
+		//Brazo izquierdo
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-4.5f, 0.0f, 2.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightRightArm_M.RenderModel();
+
+		//Pierna derecha
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(4.5f, -4.3f, -1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightLeftLeg_M.RenderModel();
+
+		//Pierna Izquierda
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-4.5f, -4.3f, -1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightRightLeg_M.RenderModel();
+
 		/* Gabinete */
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(10.0f, -1.0f, -10.0f));
@@ -1701,6 +1758,58 @@ int main()
 		model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Gabinete_M.RenderModel();
+
+		//Indicadores
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(8.5f, 50.6f, -4.0f));
+		model = glm::rotate(model, -5.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 3.5f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(7.8f, 50.25f, 2.0f));
+		model = glm::rotate(model, -8.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 3.5f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(6.8f, 49.9f, 8.0f));
+		model = glm::rotate(model, -10.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 3.5f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-7.5f, 50.03f, 5.5f));
+		model = glm::rotate(model, -160.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, -3.0f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, -2.0f * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-7.5f, 48.68f, 28.5f));
+		model = glm::rotate(model, 50.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 2.5f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 2.0f * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
+
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(4.5f, 48.75f, 27.5f));
+		model = glm::rotate(model, -50.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 2.0f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, -2.0f * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		IndicatorOld_M.RenderModel();
 
 		//blending: transparencia o traslucidez
 		glEnable(GL_BLEND);
@@ -1719,7 +1828,7 @@ int main()
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Cristal_M.RenderModel();
+		//Cristal_M.RenderModel();
 
 		glUseProgram(0);
 		mainWindow.swapBuffers();
