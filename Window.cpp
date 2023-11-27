@@ -121,6 +121,7 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->camaraTopDown = false;
 	}
 
+	// Camara Top Down
 	if (key == GLFW_KEY_P)
 	{
 		theWindow->camaraIsometrica = false;
@@ -142,6 +143,17 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->reset = true;
 	}
 
+	// Elegir ruta
+	if (key == GLFW_KEY_4)
+	{
+		theWindow->ruta = true;
+	}
+
+	if (key == GLFW_KEY_5)
+	{
+		theWindow->ruta = false;
+	}
+
 	/* Flippers */
 	if (key == GLFW_KEY_Z and action == GLFW_PRESS)
 	{
@@ -155,10 +167,12 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 	if (key == GLFW_KEY_X and action == GLFW_PRESS)
 	{
 		theWindow->angulo_flipper2 = 60.0;
+		theWindow->flipper = true;
 	}
 	else if (key == GLFW_KEY_X and action == GLFW_RELEASE)
 	{
 		theWindow->angulo_flipper2 = 0.0;
+		theWindow->flipper = false;
 	}
 
 	//Encender y apagar lampara principal

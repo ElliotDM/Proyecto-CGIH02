@@ -14,22 +14,27 @@ public:
 	GLfloat getXChange();
 	GLfloat getYChange();
 
+	// Funciones para las camaras
 	GLboolean getCamaraIsometrica() { return camaraIsometrica; }
 	GLboolean getCamaraAvatar() { return camaraAvatar; }
 	GLboolean getCamaraTopDown() { return camaraTopDown; }
 
+	// Funcion para el mouse
 	GLboolean getScroll() { return scroll; }
 
+	// Funciones para la animacion
 	GLboolean getMoneda() { return moneda; }
-	GLvoid setMoneda(bool m) { moneda = m; }
+	GLvoid setMoneda(bool moneda) { this->moneda = moneda; }
 
 	GLboolean getReset() { return reset; }
-	GLvoid setReset(bool m) { reset = m; }
+	GLvoid setReset(bool reset) { this->reset = reset; }
 
 	GLboolean getResorte() { return resorte; }
-
+	GLboolean getRuta() { return ruta; }
+	
 	GLfloat getFlipper1() { return angulo_flipper1; }
 	GLfloat getFlipper2() { return angulo_flipper2; }
+	GLfloat getAction() { return flipper; }
 
 	// Funciones para las luces
 	GLboolean getLampara() { return lampara; }
@@ -76,6 +81,7 @@ private:
 	GLboolean moneda = false;
 	GLboolean reset = false;
 	GLboolean resorte = false;
+	GLboolean ruta = true;
 
 	//Banderas para las luces
 	GLboolean lampara = true;
@@ -91,6 +97,7 @@ private:
 	// Banderas de control para los flippers
 	GLfloat angulo_flipper1 = 0.0;
 	GLfloat angulo_flipper2 = 0.0;
+	GLboolean flipper = false;
 
 	static void ManejaTeclado(GLFWwindow* window, int key, int code, int action, int mode);
 	static void ManejaMouse(GLFWwindow* window, double xPos, double yPos);
