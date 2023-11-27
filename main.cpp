@@ -59,12 +59,14 @@ float rot_offset;
 float mov_moneda;
 float rot_moneda;
 bool animacion;
+bool snd_moneda;
 
 // Resorte
 bool resorte;
 bool espera;
 float zResorte;
 float zManija;
+bool snd_resorte;
 
 // Canica
 float movx_canica;
@@ -88,6 +90,10 @@ bool flipper;
 bool caida;
 bool bajada;
 bool subida;
+bool regreso;
+float u;
+float v;
+float radio;
 
 // Wingmoulds
 bool wm1_inicio;
@@ -253,6 +259,17 @@ void CreateShaders()
 	Shader* shader1 = new Shader();
 	shader1->CreateFromFiles(vShader, fShader);
 	shaderList.push_back(*shader1);
+}
+
+
+void getEquationOfCircle(float x1, float y1, float x2, float y2, float x3, float y3) {
+	u = (x1 + x2 + x3) / 3;
+	v = (y1 + y2 + y3) / 3;
+
+	float d1 = sqrt((u - x1) * (u - x1) + (v - y1) * (v - y1));
+	float d2 = sqrt((u - x2) * (u - x2) + (v - y2) * (v - y2));
+	float d3 = sqrt((u - x3) * (u - x3) + (v - y3) * (v - y3));
+	radio = (d1 + d2 + d3) / 3;
 }
 
 
@@ -465,12 +482,14 @@ int main()
 	mov_moneda = 33.0f;
 	rot_moneda = 0.0f;
 	animacion = true;
+	snd_moneda = true;
 
 	// Resorte
 	resorte = false;
 	espera = false;
 	zResorte = 0.3;
 	zManija = 50.0;
+	snd_resorte = true;
 
 	// Canica 
 	movx_canica = 18.5f;
@@ -494,6 +513,7 @@ int main()
 	caida = false;
 	bajada = false;
 	subida = false;
+	regreso = false;
 
 	// Wingmoulds
 	wm1_inicio = false;
@@ -527,20 +547,85 @@ int main()
 	counterDay = 0;
 	firts_Light = true;
 
-	//***************************************************************//
-	// inicie el motor de sonido con los parámetros predeterminados
-	//ISoundEngine* audio = createIrrKlangDevice()
+	// Inicializacion del motor de sonido
+	ISoundEngine* SoundEngine = createIrrKlangDevice();
 
-	//if (!audio)
-	//	return 0; //Error en el audio
+	if (!SoundEngine)
+		return 0; //Error en el audio
 
-	////audio->play2D("breakout.mp3", true); //Reproducce el audio en ciclo
+	irrklang::ISound* snd = SoundEngine->play2D("PathofPain.mp3", true);
 
-	//audio->play2D("PathofPain.mp3", true); //Reproducce el audio en ciclo
+	if (snd)
+		snd->setVolume(0.5);
 
-	//ISoundEngine* SoundEngine = createIrrKlangDevice();
+	// Audio en 3D de las sierras
+	irrklang::vec3df saw_pos1(-3.0f, 49.3f, 5.5f);
+	irrklang::vec3df saw_pos2(-2.5f, 49.2f, 3.5f);
+	irrklang::vec3df saw_pos3(6.5f, 50.2f, -21.0f);
+	irrklang::vec3df saw_pos4(6.5f, 49.9f, -14.0f);
+	irrklang::vec3df saw_pos5(7.0f, 49.8f, -9.0f);
+	irrklang::vec3df saw_pos6(15.0f, 49.6f, -5.0f);
+	irrklang::vec3df saw_pos7(18.5f, 49.4f, 2.0f);
+	
+	irrklang::ISound* saw_snd1 = SoundEngine->play3D("saw1.mp3", saw_pos1, true, false, true);
+	irrklang::ISound* saw_snd2 = SoundEngine->play3D("saw2.mp3", saw_pos2, true, false, true);
+	irrklang::ISound* saw_snd3 = SoundEngine->play3D("saw1.mp3", saw_pos3, true, false, true);
+	irrklang::ISound* saw_snd4 = SoundEngine->play3D("saw2.mp3", saw_pos4, true, false, true);
+	irrklang::ISound* saw_snd5 = SoundEngine->play3D("saw1.mp3", saw_pos5, true, false, true);
+	irrklang::ISound* saw_snd6 = SoundEngine->play3D("saw2.mp3", saw_pos6, true, false, true);
+	irrklang::ISound* saw_snd7 = SoundEngine->play3D("saw2.mp3", saw_pos7, true, false, true);
 
-	//***************************************************************//
+	float minDistance = 2.0f;
+	float volume = 6.0f;
+
+	if (saw_snd1)
+	{
+		saw_snd1->setMinDistance(minDistance); // a loud sound
+		saw_snd1->setIsPaused(false); // unpause the sound
+		saw_snd1->setVolume(volume);
+	}
+
+	if (saw_snd2)
+	{
+		saw_snd2->setMinDistance(minDistance); // a loud sound
+		saw_snd2->setIsPaused(false); // unpause the sound
+		saw_snd2->setVolume(volume);
+	}
+
+	if (saw_snd3)
+	{
+		saw_snd3->setMinDistance(minDistance); // a loud sound
+		saw_snd3->setIsPaused(false); // unpause the sound
+		saw_snd3->setVolume(volume);
+	}
+
+	if (saw_snd4)
+	{
+		saw_snd4->setMinDistance(minDistance); // a loud sound
+		saw_snd4->setIsPaused(false); // unpause the sound
+		saw_snd4->setVolume(volume);
+	}
+
+	if (saw_snd5)
+	{
+		saw_snd5->setMinDistance(minDistance); // a loud sound
+		saw_snd5->setIsPaused(false); // unpause the sound
+		saw_snd5->setVolume(volume);
+	}
+
+	if (saw_snd6)
+	{
+		saw_snd6->setMinDistance(minDistance); // a loud sound
+		saw_snd6->setIsPaused(false); // unpause the sound
+		saw_snd6->setVolume(volume);
+	}
+
+	if (saw_snd7)
+	{
+		saw_snd7->setMinDistance(minDistance); // a loud sound
+		saw_snd7->setIsPaused(false); // unpause the sound
+		saw_snd7->setVolume(volume);
+	}
 
 	//Loop mientras no se cierre la ventana
 	while (!mainWindow.getShouldClose())
@@ -776,12 +861,14 @@ int main()
 			mov_moneda = 33.0f;
 			rot_moneda = 0.0f;
 			animacion = true;
+			snd_moneda = true;
 
 			// Resorte
 			resorte = false;
 			espera = false;
 			zResorte = 0.3;
 			zManija = 50.0;
+			snd_resorte = true;
 
 			// Canica 
 			movx_canica = 18.5f;
@@ -803,7 +890,9 @@ int main()
 			rebote = false;
 			flipper = false;
 			caida = false;
+			bajada = false;
 			subida = false;
+			regreso = false;
 
 			mainWindow.setReset(false);
 			mainWindow.setMoneda(false);
@@ -814,6 +903,13 @@ int main()
 			// Inserta moneda y comienza la animacion
 			if (mainWindow.getMoneda() && animacion)
 			{
+				if (snd_moneda)
+				{
+					SoundEngine->play2D("coin.mp3", false);
+				}
+
+				snd_moneda = false;
+
 				if (mov_moneda > 28.0)
 				{
 					mov_moneda -= moneda_offset * deltaTime;
@@ -865,6 +961,13 @@ int main()
 				}
 				// Regresa el resorte a su posicion inicial
 				else if (!(mainWindow.getResorte()) && zResorte < 0.3) {
+					if (snd_resorte)
+					{
+						SoundEngine->play2D("spring.mp3", false);
+					}
+
+					snd_resorte = false;
+
 					zResorte = 0.3;
 					zManija = 50.0;
 					canica_offset = 0.4f;
@@ -918,6 +1021,8 @@ int main()
 						if (wm1_inicio) {}
 						else
 						{
+							SoundEngine->play2D("hit.mp3", false);
+							SoundEngine->play2D("wingmould.mp3", false);
 							wm1_inicio = true;
 						}
 
@@ -941,6 +1046,8 @@ int main()
 						if (wm2_inicio) {}
 						else
 						{
+							SoundEngine->play2D("hit.mp3", false);
+							SoundEngine->play2D("wingmould.mp3", false);
 							wm2_inicio = true;
 						}
 
@@ -965,15 +1072,20 @@ int main()
 							flipper = true;
 						}
 					}
-					// Canica 
+					// Canica se desliza por el flipper
 					else if (flipper)
 					{
+						// Si se acciona el flipper se cambia la ruta
 						if (mainWindow.getAction())
 						{
+							getEquationOfCircle(movx_canica, movz_canica, 9.75, -16.5, 6.5, -15.5);
+							SoundEngine->play2D("hit.mp3", false);
+							canica_offset = 0.2;
+							t_curva = 0.0;
 							flipper = false;
 							subida = true;
 						}
-
+						// Sino continua bajando
 						if (movx_canica >= 11.2)
 						{
 							movx_canica -= canica_offset * deltaTime;
@@ -988,10 +1100,48 @@ int main()
 							caida = true;
 						}
 					}
+					// Canica es golpeada por el flipper
 					else if (subida)
 					{
-						movy_canica += canica_offset * deltaTime;
+						if (t_curva >= -3.8)
+						{
+							t_curva -= 0.1 * deltaTime;
+							movx_canica = u + (glm::sqrt(radio) * glm::cos(t_curva));
+							movz_canica = v + (glm::sqrt(radio) * glm::sin(t_curva));
+							movy_canica = -0.053 * movz_canica + 49.267;
+						}
+						else
+						{
+							SoundEngine->play2D("hit.mp3", false);
+							t_curva = -3.07;
+							subida = false;
+							regreso = true;
+						}				
 					}
+					// Canica cae y continua su camino por el tablero
+					else if (regreso)
+					{
+						if (t_curva <= 0)
+						{
+							t_curva += 0.07 * deltaTime;
+							movx_canica = 8.1 + (glm::sqrt(2.57) * glm::cos(t_curva));
+							movz_canica = -15.4 + (glm::sqrt(2.57) * glm::sin(t_curva));
+							movy_canica = -0.053 * movz_canica + 49.267;
+						}
+						else if (movz_canica <= 3.2)
+						{
+							movz_canica += canica_offset * deltaTime;
+							movy_canica = -0.053 * movz_canica + 49.267;
+						}
+						else
+						{
+							SoundEngine->play2D("hit.mp3", false);
+							t_curva = 3.7;
+							bajada = true;
+							regreso = false;
+						}
+					}
+					// Si no se activa el flipper la canica sigue su camino
 					else if (caida)
 					{
 						if (t_curva <= 0.403)
@@ -1001,13 +1151,14 @@ int main()
 							movz_canica = -27.1 + (glm::sqrt(2376.33) * glm::sin(t_curva));
 							movy_canica = -0.053 * movz_canica + 49.267;
 						}
-						else if (movz_canica <= 4.8)
+						else if (movz_canica <= 3.2)
 						{
 							movz_canica += canica_offset * deltaTime;
 							movy_canica = -0.053 * movz_canica + 49.267;
 						}
 						else
 						{
+							SoundEngine->play2D("hit.mp3", false);
 							t_curva = 3.7;
 							bajada = true;
 							caida = false;
@@ -1029,6 +1180,7 @@ int main()
 						}
 						else
 						{
+							SoundEngine->play2D("hit.mp3", false);
 							t_curva = -0.46f;
 							canica_offset = 0.3f;
 							choca1 = true;
@@ -1045,6 +1197,8 @@ int main()
 						if (wm1_inicio) {}
 						else
 						{
+							SoundEngine->play2D("hit.mp3", false);
+							SoundEngine->play2D("wingmould.mp3", false);
 							wm1_inicio = true;
 						}
 
@@ -1075,6 +1229,7 @@ int main()
 						}
 						else
 						{
+							SoundEngine->play2D("hit.mp3", false);
 							t_curva = -0.46f;
 							canica_offset = 0.3f;
 							curva = false;
@@ -1120,12 +1275,14 @@ int main()
 				mov_moneda = 33.0f;
 				rot_moneda = 0.0f;
 				animacion = true;
+				snd_moneda = true;
 
 				// Resorte
 				resorte = false;
 				espera = false;
 				zResorte = 0.3;
 				zManija = 50.0;
+				snd_resorte = true;
 
 				// Canica 
 				movx_canica = 18.5f;
@@ -1147,7 +1304,9 @@ int main()
 				rebote = false;
 				flipper = false;
 				caida = false;
+				bajada = false;
 				subida = false;
+				regreso = false;
 			}
 		}
 
@@ -1305,7 +1464,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Nail_M.RenderModel();
 
-		//soñadores
+		// Soñadores
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, 49.0f, 26.0f));
 		model = glm::rotate(model, 3 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -1313,8 +1472,8 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Dreamers_M.RenderModel();
 
-    //soñadores
-    model = glm::mat4(1.0);
+		// Soñadores
+		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(16.0f, 49.0f, 26.0f));
 		model = glm::rotate(model, 3 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.03f, 0.03f, 0.03f));
@@ -1323,8 +1482,8 @@ int main()
 
 		// Moneda
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(13.0f, 39.5f, mov_moneda));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		model = glm::translate(model, glm::vec3(9.25f, 47.5f, mov_moneda));
+		model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, rot_moneda * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -1359,27 +1518,6 @@ int main()
 		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica_M.RenderModel();
-
-		//model = glm::mat4(1.0f);
-		//model = glm::translate(model, glm::vec3(11.2, 49.4, -12));
-		//model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		//model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//Canica_M.RenderModel();
-
-		//model = glm::mat4(1.0f);
-		//model = glm::translate(model, glm::vec3(10.5, 49.4, -10));
-		//model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		//model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//Canica_M.RenderModel();
-
-		//model = glm::mat4(1.0f);
-		//model = glm::translate(model, glm::vec3(9.7, 49.4, -8));
-		//model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		//model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//Canica_M.RenderModel();
 
 		// Flipper 1
 		model = glm::mat4(1.0);
@@ -1695,6 +1833,32 @@ int main()
 		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}
+
+	if (snd)
+		snd->drop();
+
+	if (saw_snd1)
+		saw_snd1->drop();
+
+	if (saw_snd2)
+		saw_snd2->drop();
+
+	if (saw_snd3)
+		saw_snd3->drop();
+
+	if (saw_snd4)
+		saw_snd4->drop();
+
+	if (saw_snd5)
+		saw_snd5->drop();
+
+	if (saw_snd6)
+		saw_snd6->drop();
+
+	if (saw_snd7)
+		saw_snd7->drop();
+
+	SoundEngine->drop();
 
 	return 0;
 }
