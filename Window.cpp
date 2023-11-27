@@ -105,95 +105,28 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 	}
 
 	/* Camaras */
+	// Camara isometrica
+	if (key == GLFW_KEY_I)
+	{
+		theWindow->camaraIsometrica = true;
+		theWindow->camaraAvatar = false;
+		theWindow->camaraTopDown = false;
+	}
 
 	// Camara ligada al avatar
 	if (key == GLFW_KEY_O)
 	{
-		theWindow->camaraJugador = false;
+		theWindow->camaraIsometrica = false;
 		theWindow->camaraAvatar = true;
+		theWindow->camaraTopDown = false;
 	}
 
-	// Camara fija a la maquina de pinball
-	if (key == GLFW_KEY_I)
+	// Camara Top Down
+	if (key == GLFW_KEY_P)
 	{
-		theWindow->camaraJugador = true;
+		theWindow->camaraIsometrica = false;
 		theWindow->camaraAvatar = false;
-	}
-
-	// Teclas asignadas para el control de la
-	// camara ligada al avatar
-	if (key == GLFW_KEY_W)
-	{
-		if (theWindow->avatarY >= 50.6)
-		{
-		}
-		else
-		{
-			theWindow->retroceder = false;
-			theWindow->avatarY += 0.1;
-			theWindow->avatarZ = -theWindow->avatarY / 0.053 + 49.267 / 0.053;
-		}
-	}
-
-	if (key == GLFW_KEY_S)
-	{
-		if (theWindow->avatarY <= 48)
-		{
-		}
-		else
-		{
-			theWindow->retroceder = true;
-			theWindow->avatarY -= 0.1;
-			theWindow->avatarZ = -theWindow->avatarY / 0.053 + 49.267 / 0.053;
-		}
-	}
-
-	if (key == GLFW_KEY_A)
-	{
-		if (theWindow->retroceder)
-		{
-			if (theWindow->avatarX >= 23.0)
-			{
-			}
-			else
-			{
-				theWindow->avatarX += 0.5;
-			}
-		}
-		else
-		{
-			if (theWindow->avatarX <= -3.0)
-			{
-			}
-			else
-			{
-				theWindow->avatarX -= 0.5;
-			}
-		}
-	}
-
-	if (key == GLFW_KEY_D)
-	{
-		if (theWindow->retroceder)
-		{
-			if (theWindow->avatarX <= -3.0)
-			{
-			}
-			else
-			{
-				theWindow->avatarX -= 0.5;
-			}
-		}
-		else
-		{
-			if (theWindow->avatarX >= 23.0)
-			{
-			}
-			else
-			{
-				theWindow->avatarX += 0.5;
-			}
-		}
+		theWindow->camaraTopDown = true;
 	}
 
 	/* Control de animaciones */
@@ -210,6 +143,17 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->reset = true;
 	}
 
+	// Elegir ruta
+	if (key == GLFW_KEY_4)
+	{
+		theWindow->ruta = true;
+	}
+
+	if (key == GLFW_KEY_5)
+	{
+		theWindow->ruta = false;
+	}
+
 	/* Flippers */
 	if (key == GLFW_KEY_Z and action == GLFW_PRESS)
 	{
@@ -223,10 +167,12 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 	if (key == GLFW_KEY_X and action == GLFW_PRESS)
 	{
 		theWindow->angulo_flipper2 = 60.0;
+		theWindow->flipper = true;
 	}
 	else if (key == GLFW_KEY_X and action == GLFW_RELEASE)
 	{
 		theWindow->angulo_flipper2 = 0.0;
+		theWindow->flipper = false;
 	}
 
 	//Encender y apagar lampara principal
