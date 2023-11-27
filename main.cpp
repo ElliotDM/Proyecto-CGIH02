@@ -55,9 +55,6 @@ float moneda_offset;
 float canica_offset;
 float rot_offset;
 
-// Ruta
-int random;
-
 // Moneda
 float mov_moneda;
 float rot_moneda;
@@ -89,6 +86,7 @@ bool choca1;
 bool rebote;
 bool flipper;
 bool caida;
+bool bajada;
 bool subida;
 
 // Wingmoulds
@@ -435,9 +433,6 @@ int main()
 
 	// Inicializacion de variables para animacion
 
-	// Ruta
-	srand((unsigned)time(NULL));
-
 	// Offsets
 	moneda_offset = 0.03f;
 	canica_offset = 0.05f;
@@ -474,6 +469,7 @@ int main()
 	rebote = false;
 	flipper = false;
 	caida = false;
+	bajada = false;
 	subida = false;
 
 	// Wingmoulds
@@ -884,15 +880,13 @@ int main()
 					else
 					{
 						t_curva = -0.4f;
-						random = 1 + (rand() % 10);
-						canica_offset = 0.08;
+						canica_offset = 0.2f;
 						salida = false;
 						choca = true;
 					}
 				}
-
 				// Recorridos
-				if (true)
+				if (mainWindow.getRuta())
 				{
 					// Canica choca con obstaculo y rebota
 					if (choca)
@@ -904,12 +898,11 @@ int main()
 							wm1_inicio = true;
 						}
 
+						// Cae rapidamente
 						if (movz_canica < -19.5)
 						{
 							movz_canica += canica_offset * deltaTime;
 							movy_canica = -0.053 * movz_canica + 49.267;
-							/*std::cout << movx_canica << std::endl;
-							std::cout << movz_canica << std::endl;*/
 						}
 						else
 						{
@@ -918,6 +911,7 @@ int main()
 							t_curva = -0.47f;
 						}
 					}
+					// Canica vuelve a chocar con obstaculo y rebota
 					else if (rebote)
 					{
 						// Activa animacion del objeto jerarquico
@@ -927,6 +921,7 @@ int main()
 							wm2_inicio = true;
 						}
 
+						// Sigue una trayectoria de un circulo
 						if (t_curva >= -2.96)
 						{
 							t_curva -= 0.07 * deltaTime;
@@ -934,6 +929,7 @@ int main()
 							movz_canica = -18.67 + (glm::sqrt(3.47) * glm::sin(t_curva));
 							movy_canica = -0.053 * movz_canica + 49.267;
 						}
+						// Cae rapidamente
 						else if (movz_canica <= -13.7)
 						{
 							movz_canica += canica_offset * deltaTime;
@@ -941,16 +937,16 @@ int main()
 						}
 						else
 						{
+							canica_offset = 0.1;
 							rebote = false;
 							flipper = true;
 						}
-
 					}
+					// Canica 
 					else if (flipper)
 					{
 						if (mainWindow.getAction())
 						{
-							printf("Hola");
 							flipper = false;
 							subida = true;
 						}
@@ -963,6 +959,8 @@ int main()
 						}
 						else
 						{
+							t_curva = 0.315;
+							canica_offset = 0.2;
 							flipper = false;
 							caida = true;
 						}
@@ -973,7 +971,46 @@ int main()
 					}
 					else if (caida)
 					{
-						movy_canica -= canica_offset * deltaTime;
+						if (t_curva <= 0.403)
+						{
+							t_curva += 0.004 * deltaTime;
+							movx_canica = -35.15 + (glm::sqrt(2376.33) * glm::cos(t_curva));
+							movz_canica = -27.1 + (glm::sqrt(2376.33) * glm::sin(t_curva));
+							movy_canica = -0.053 * movz_canica + 49.267;
+						}
+						else if (movz_canica <= 4.8)
+						{
+							movz_canica += canica_offset * deltaTime;
+							movy_canica = -0.053 * movz_canica + 49.267;
+						}
+						else
+						{
+							t_curva = 3.7;
+							bajada = true;
+							caida = false;
+						}
+					}
+					else if (bajada)
+					{
+						if (t_curva <= 6.18)
+						{
+							t_curva += 0.08 * deltaTime;
+							movx_canica = 11.72 + (glm::sqrt(5.25) * glm::cos(t_curva));
+							movz_canica = 4.28 + (glm::sqrt(5.25) * glm::sin(t_curva));
+							movy_canica = -0.053 * movz_canica + 49.267;
+						}
+						else if (movz_canica <= 13.5)
+						{
+							movz_canica += canica_offset * deltaTime;
+							movy_canica = -0.053 * movz_canica + 49.267;
+						}
+						else
+						{
+							t_curva = -0.46f;
+							canica_offset = 0.3f;
+							choca1 = true;
+							bajada = false;
+						}
 					}
 				}
 				else
@@ -1028,7 +1065,7 @@ int main()
 				{
 					if (t_curva >= -3.4)
 					{
-						t_curva -= 0.06 * deltaTime;
+						t_curva -= 0.08 * deltaTime;
 						movx_canica = 11.11 + (glm::sqrt(10.32) * glm::cos(t_curva));
 						movz_canica = 14.21 + (glm::sqrt(10.32) * glm::sin(t_curva));
 						movy_canica = -0.053 * movz_canica + 49.267;
@@ -1300,19 +1337,26 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica_M.RenderModel();
 
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(13, 50.4, -13.7));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica_M.RenderModel();
+		//model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(11.2, 49.4, -12));
+		//model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		//model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
+		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		//Canica_M.RenderModel();
 
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(11.2, 50.3, -12.1));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica_M.RenderModel();
+		//model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(10.5, 49.4, -10));
+		//model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		//model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
+		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		//Canica_M.RenderModel();
+
+		//model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(9.7, 49.4, -8));
+		//model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		//model = glm::rotate(model, rot_canica * toRadians, glm::vec3(1.0f, 1.0f, 0.0f));
+		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		//Canica_M.RenderModel();
 
 		// Flipper 1
 		model = glm::mat4(1.0);

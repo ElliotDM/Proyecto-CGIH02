@@ -143,6 +143,17 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->reset = true;
 	}
 
+	// Elegir ruta
+	if (key == GLFW_KEY_4)
+	{
+		theWindow->ruta = true;
+	}
+
+	if (key == GLFW_KEY_5)
+	{
+		theWindow->ruta = false;
+	}
+
 	/* Flippers */
 	if (key == GLFW_KEY_Z and action == GLFW_PRESS)
 	{
