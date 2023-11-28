@@ -779,8 +779,6 @@ int main()
 		//Caso 5
 		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
 		{
-			shaderList[0].SetPointLights(pointLights2, pointLightCount-1);
-		}
 		//Caso 6
 		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
 		{
@@ -1113,6 +1111,29 @@ int main()
 							t_curva -= 0.1 * deltaTime;
 							movx_canica = u + (glm::sqrt(radio) * glm::cos(t_curva));
 							movz_canica = v + (glm::sqrt(radio) * glm::sin(t_curva));
+							movy_canica = -0.053 * movz_canica + 49.267;
+						}
+						else
+						{
+							SoundEngine->play2D("hit.mp3", false);
+							t_curva = -3.07;
+							subida = false;
+							regreso = true;
+						}				
+					}
+					// Canica cae y continua su camino por el tablero
+					else if (regreso)
+					{
+						if (t_curva <= 0)
+						{
+							t_curva += 0.07 * deltaTime;
+							movx_canica = 8.1 + (glm::sqrt(2.57) * glm::cos(t_curva));
+							movz_canica = -15.4 + (glm::sqrt(2.57) * glm::sin(t_curva));
+							movy_canica = -0.053 * movz_canica + 49.267;
+						}
+						else if (movz_canica <= 3.2)
+						{
+							movz_canica += canica_offset * deltaTime;
 							movy_canica = -0.053 * movz_canica + 49.267;
 						}
 						else
@@ -1703,6 +1724,40 @@ int main()
 			posZ = camera.getCameraPosition().z;
 			anguloCamara = camera.getYaw() - 90;
 		}
+
+		//Avatar -> Caballero Vigia
+		//Cuerpo
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(8.5f, 50.6f, 20.0f));
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+		modelaux = model;
+		//model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightBody_M.RenderModel();
+
+		//Brazo derecho
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(4.5f, 0.0f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightLeftArm_M.RenderModel();
+
+		//Brazo izquierdo
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-4.5f, 0.0f, 2.5f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightRightArm_M.RenderModel();
+
+		//Pierna derecha
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(4.5f, -4.3f, -1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightLeftLeg_M.RenderModel();
+
+		//Pierna Izquierda
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-4.5f, -4.3f, -1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		WatcherKnightRightLeg_M.RenderModel();
 
 		//Cuerpo
 		model = glm::mat4(1.0f);

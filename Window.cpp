@@ -143,6 +143,17 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->reset = true;
 	}
 
+	// Elegir ruta
+	if (key == GLFW_KEY_4)
+	{
+		theWindow->ruta = true;
+	}
+
+	if (key == GLFW_KEY_5)
+	{
+		theWindow->ruta = false;
+	}
+
 	/* Flippers */
 	if (key == GLFW_KEY_Z and action == GLFW_PRESS)
 	{
@@ -156,10 +167,12 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 	if (key == GLFW_KEY_X and action == GLFW_PRESS)
 	{
 		theWindow->angulo_flipper2 = 60.0;
+		theWindow->flipper = true;
 	}
 	else if (key == GLFW_KEY_X and action == GLFW_RELEASE)
 	{
 		theWindow->angulo_flipper2 = 0.0;
+		theWindow->flipper = false;
 	}
 
 	//Encender y apagar lampara principal
@@ -181,14 +194,56 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->lightFlippers = false;
 	}
 
-	//Encender y apagar luz del objeto jerarquico
-	if (key == GLFW_KEY_G)
+	//Para manipular el primer objeto
+	if (key == GLFW_KEY_8)
 	{
-		theWindow->hierarchicalObject = true;
+		theWindow-> Object1 = true;
+		theWindow-> Object2 = false;
+		theWindow-> Object3 = false;
 	}
-	else if (key == GLFW_KEY_H)
+  
+	//Para manipular al segundo objeto
+	if (key == GLFW_KEY_9)
+		theWindow-> Object1 = false;
+		theWindow-> Object2 = true;
+		theWindow-> Object3 = false;
+	}
+	//Para manipular al tercer objeto
+	if (key == GLFW_KEY_0)
 	{
-		theWindow->hierarchicalObject = false;
+		theWindow-> Object1 = false;
+		theWindow-> Object2 = false;
+		theWindow-> Object3 = true;
+	}
+	if (theWindow -> getObject1()) {
+		if (key == GLFW_KEY_G)
+		{
+			theWindow->hierarchicalObject = true;
+		}
+		else if (key == GLFW_KEY_H)
+		{
+			theWindow->hierarchicalObject = false;
+		}
+	}
+	else if (theWindow-> getObject2()) {
+		if (key == GLFW_KEY_G)
+		{
+			theWindow->hierarchicalObject2 = true;
+		}
+		else if (key == GLFW_KEY_H)
+		{
+			theWindow->hierarchicalObject2 = false;
+		}
+	}
+	else if (theWindow-> getObject3()) {
+		if (key == GLFW_KEY_G)
+		{
+			theWindow->hierarchicalObject3 = true;
+		}
+		else if (key == GLFW_KEY_H)
+		{
+			theWindow->hierarchicalObject3 = false;
+		}
 	}
 
 	if (key >= 0 && key < 1024)
