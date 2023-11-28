@@ -201,9 +201,9 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow-> Object2 = false;
 		theWindow-> Object3 = false;
 	}
+  
 	//Para manipular al segundo objeto
 	if (key == GLFW_KEY_9)
-	{
 		theWindow-> Object1 = false;
 		theWindow-> Object2 = true;
 		theWindow-> Object3 = false;

@@ -14,7 +14,7 @@ public:
 	GLfloat getXChange();
 	GLfloat getYChange();
 
-	// Funciones para las camaras
+	// Funciones para el cambio de camara
 	GLboolean getCamaraIsometrica() { return camaraIsometrica; }
 	GLboolean getCamaraAvatar() { return camaraAvatar; }
 	GLboolean getCamaraTopDown() { return camaraTopDown; }
@@ -28,6 +28,9 @@ public:
 
 	GLboolean getReset() { return reset; }
 	GLvoid setReset(bool reset) { this->reset = reset; }
+
+	GLboolean getMoneda() { return moneda; }
+	GLvoid setMoneda(bool m) { moneda = m; }
 
 	GLboolean getResorte() { return resorte; }
 	GLboolean getRuta() { return ruta; }
@@ -83,10 +86,11 @@ private:
 	GLboolean resorte = false;
 	GLboolean ruta = true;
 
-	//Banderas para las luces
+	// Banderas para las luces
 	GLboolean lampara = true;
 	GLboolean lightFlippers = true;
 	GLboolean hierarchicalObject = true;
+
 	GLboolean hierarchicalObject2 = true;
 	GLboolean hierarchicalObject3 = true;
 
