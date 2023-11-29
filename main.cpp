@@ -560,10 +560,10 @@ int main()
 	if (!SoundEngine)
 		return 0; //Error en el audio
 
-	//irrklang::ISound* snd = SoundEngine->play2D("PathofPain.mp3", true);
+	irrklang::ISound* snd = SoundEngine->play2D("PathofPain.mp3", true);
 
-	//if (snd)
-	//	snd->setVolume(0.5);
+	if (snd)
+		snd->setVolume(0.5);
 
 	// Audio en 3D de las sierras
 	irrklang::vec3df saw_pos1(-3.0f, 49.3f, 5.5f);
@@ -1827,8 +1827,8 @@ int main()
 		mainWindow.swapBuffers();
 	}
 
-	//if (snd)
-	//	snd->drop();
+	if (snd)
+		snd->drop();
 
 	if (saw_snd1)
 		saw_snd1->drop();
