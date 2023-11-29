@@ -14,7 +14,7 @@ public:
 	GLfloat getXChange();
 	GLfloat getYChange();
 
-	// Funciones para el cambio de camara
+	// Funciones para las camaras
 	GLboolean getCamaraIsometrica() { return camaraIsometrica; }
 	GLboolean getCamaraAvatar() { return camaraAvatar; }
 	GLboolean getCamaraTopDown() { return camaraTopDown; }
@@ -29,12 +29,10 @@ public:
 	GLboolean getReset() { return reset; }
 	GLvoid setReset(bool reset) { this->reset = reset; }
 
-	GLboolean getMoneda() { return moneda; }
-	GLvoid setMoneda(bool m) { moneda = m; }
-
 	GLboolean getResorte() { return resorte; }
 	GLboolean getRuta() { return ruta; }
 	
+	// Funciones para los flippers
 	GLfloat getFlipper1() { return angulo_flipper1; }
 	GLfloat getFlipper2() { return angulo_flipper2; }
 	GLfloat getAction() { return flipper; }
@@ -49,6 +47,10 @@ public:
 	GLboolean getObject1() { return Object1; }
 	GLboolean getObject2() { return Object2; }
 	GLboolean getObject3() { return Object3; }
+
+	// Funciones para el avatar
+	GLfloat getPataDer() { return pataDer; }
+	GLfloat getPataIzq() { return pataIzq; }
 
 	bool getShouldClose()
 	{
@@ -86,11 +88,15 @@ private:
 	GLboolean resorte = false;
 	GLboolean ruta = true;
 
+	// Banderas de control para los flippers
+	GLfloat angulo_flipper1 = 0.0;
+	GLfloat angulo_flipper2 = 0.0;
+	GLboolean flipper = false;
+
 	// Banderas para las luces
 	GLboolean lampara = true;
 	GLboolean lightFlippers = true;
 	GLboolean hierarchicalObject = true;
-
 	GLboolean hierarchicalObject2 = true;
 	GLboolean hierarchicalObject3 = true;
 
@@ -98,10 +104,9 @@ private:
 	GLboolean Object2 = false;
 	GLboolean Object3 = false;
 
-	// Banderas de control para los flippers
-	GLfloat angulo_flipper1 = 0.0;
-	GLfloat angulo_flipper2 = 0.0;
-	GLboolean flipper = false;
+	// Banderas para el movimiento del avatar
+	GLfloat pataDer = 0.0;
+	GLfloat pataIzq = 0.0;
 
 	static void ManejaTeclado(GLFWwindow* window, int key, int code, int action, int mode);
 	static void ManejaMouse(GLFWwindow* window, double xPos, double yPos);

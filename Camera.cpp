@@ -49,6 +49,16 @@ void Camera::mouseControl(GLfloat xChange, GLfloat yChange)
 	yaw += xChange;
 	pitch += yChange;
 
+	if (yaw > 359.0f)
+	{
+		yaw = 0.0f;
+	}
+
+	if (yaw < 0.0)
+	{
+		yaw = 359.0f;
+	}
+
 	if (pitch > 89.0f)
 	{
 		pitch = 89.0f;

@@ -175,6 +175,8 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow->flipper = false;
 	}
 
+	/* Luces */
+
 	//Encender y apagar lampara principal
 	if (key == GLFW_KEY_B)
 	{
@@ -201,9 +203,9 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		theWindow-> Object2 = false;
 		theWindow-> Object3 = false;
 	}
-  
 	//Para manipular al segundo objeto
 	if (key == GLFW_KEY_9)
+	{
 		theWindow-> Object1 = false;
 		theWindow-> Object2 = true;
 		theWindow-> Object3 = false;
@@ -243,6 +245,21 @@ void Window::ManejaTeclado(GLFWwindow* window, int key, int code, int action, in
 		else if (key == GLFW_KEY_H)
 		{
 			theWindow->hierarchicalObject3 = false;
+		}
+	}
+
+	/* Avatar */
+	if (key == GLFW_KEY_W || key == GLFW_KEY_S || key == GLFW_KEY_A || key == GLFW_KEY_D)
+	{
+		if (theWindow->pataDer > 40.0)
+		{
+			theWindow->pataDer -= 5.0;
+			theWindow->pataIzq += 5.0;
+		}
+		else
+		{
+			theWindow->pataDer += 5.0;
+			theWindow->pataIzq -= 5.0;
 		}
 	}
 

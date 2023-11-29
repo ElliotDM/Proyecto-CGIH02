@@ -40,7 +40,8 @@ float zoomZ;
 float posX;
 float posY;
 float posZ;
-float anguloCamara;
+float anguloYaw;
+float anguloPitch;
 bool enableMouse;
 
 // Variables para el contador de dia y noche
@@ -473,8 +474,9 @@ int main()
 	zoomZ = 60.0;
 	posX = 8.6f;
 	posY = 52.5f;
-	posZ = -25.5f;
-	anguloCamara = 0.0f;
+	posZ = -26.5f;
+	anguloYaw = 0.0f;
+	anguloPitch = 0.0f;
 
 	// Inicializacion de variables para animacion
 
@@ -558,10 +560,10 @@ int main()
 	if (!SoundEngine)
 		return 0; //Error en el audio
 
-	irrklang::ISound* snd = SoundEngine->play2D("PathofPain.mp3", true);
+	//irrklang::ISound* snd = SoundEngine->play2D("PathofPain.mp3", true);
 
-	if (snd)
-		snd->setVolume(0.5);
+	//if (snd)
+	//	snd->setVolume(0.5);
 
 	// Audio en 3D de las sierras
 	irrklang::vec3df saw_pos1(-3.0f, 49.3f, 5.5f);
@@ -779,6 +781,8 @@ int main()
 		//Caso 5
 		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and mainWindow.gethierarchicalObject3())
 		{
+			shaderList[0].SetPointLights(pointLights2, pointLightCount-1);
+		}
 		//Caso 6
 		if (mainWindow.getlightFlippers() and !mainWindow.gethierarchicalObject() and mainWindow.gethierarchicalObject2() and !mainWindow.gethierarchicalObject3())
 		{
@@ -1111,29 +1115,6 @@ int main()
 							t_curva -= 0.1 * deltaTime;
 							movx_canica = u + (glm::sqrt(radio) * glm::cos(t_curva));
 							movz_canica = v + (glm::sqrt(radio) * glm::sin(t_curva));
-							movy_canica = -0.053 * movz_canica + 49.267;
-						}
-						else
-						{
-							SoundEngine->play2D("hit.mp3", false);
-							t_curva = -3.07;
-							subida = false;
-							regreso = true;
-						}				
-					}
-					// Canica cae y continua su camino por el tablero
-					else if (regreso)
-					{
-						if (t_curva <= 0)
-						{
-							t_curva += 0.07 * deltaTime;
-							movx_canica = 8.1 + (glm::sqrt(2.57) * glm::cos(t_curva));
-							movz_canica = -15.4 + (glm::sqrt(2.57) * glm::sin(t_curva));
-							movy_canica = -0.053 * movz_canica + 49.267;
-						}
-						else if (movz_canica <= 3.2)
-						{
-							movz_canica += canica_offset * deltaTime;
 							movy_canica = -0.053 * movz_canica + 49.267;
 						}
 						else
@@ -1722,48 +1703,17 @@ int main()
 			posX = camera.getCameraPosition().x;
 			posY = camera.getCameraPosition().y;
 			posZ = camera.getCameraPosition().z;
-			anguloCamara = camera.getYaw() - 90;
+
+			anguloYaw = camera.getYaw() - 90;
+			anguloPitch = camera.getPitch() / 10;
 		}
 
-		//Avatar -> Caballero Vigia
 		//Cuerpo
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(8.5f, 50.6f, 20.0f));
-		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
-		modelaux = model;
-		//model = glm::scale(model, glm::vec3(0.17f, 1.0f, 0.25f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WatcherKnightBody_M.RenderModel();
-
-		//Brazo derecho
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(4.5f, 0.0f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WatcherKnightLeftArm_M.RenderModel();
-
-		//Brazo izquierdo
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(-4.5f, 0.0f, 2.5f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WatcherKnightRightArm_M.RenderModel();
-
-		//Pierna derecha
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(4.5f, -4.3f, -1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WatcherKnightLeftLeg_M.RenderModel();
-
-		//Pierna Izquierda
-		model = modelaux;
-		model = glm::translate(model, glm::vec3(-4.5f, -4.3f, -1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		WatcherKnightRightLeg_M.RenderModel();
-
-		//Cuerpo
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(posX, posY - 1.3f, posZ));
-		model = glm::rotate(model, -anguloCamara * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+		model = glm::translate(model, glm::vec3(posX, posY - 1.2f, posZ + 3.0f));
+		model = glm::rotate(model, -anguloYaw * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, anguloPitch * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.07f, 0.07f, 0.07f));
 		modelaux = model;
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WatcherKnightBody_M.RenderModel();
@@ -1783,12 +1733,14 @@ int main()
 		//Pierna derecha
 		model = modelaux;
 		model = glm::translate(model, glm::vec3(4.5f, -4.3f, -1.0f));
+		model = glm::rotate(model, mainWindow.getPataDer() * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WatcherKnightLeftLeg_M.RenderModel();
 
 		//Pierna Izquierda
 		model = modelaux;
 		model = glm::translate(model, glm::vec3(-4.5f, -4.3f, -1.0f));
+		model = glm::rotate(model, mainWindow.getPataIzq() * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		WatcherKnightRightLeg_M.RenderModel();
 
@@ -1875,8 +1827,8 @@ int main()
 		mainWindow.swapBuffers();
 	}
 
-	if (snd)
-		snd->drop();
+	//if (snd)
+	//	snd->drop();
 
 	if (saw_snd1)
 		saw_snd1->drop();

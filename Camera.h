@@ -20,6 +20,7 @@ public:
 	glm::vec3 getCameraDirection();
 	glm::mat4 calculateViewMatrix();
 	GLfloat getYaw() { return yaw; };
+	GLfloat getPitch() { return pitch; };
 
 	~Camera();
 
